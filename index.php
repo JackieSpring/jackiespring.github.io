@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Cool Forum</title>
+    <link rel="canonical" href='<?php echo (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"; ?>'>
+    <style>
+    .test {
+        background-color: #8abb55;
+    }
+    </style>
+    </head>
+    <body>
+<!--
++-------------------------------+
+| MENU |     | LOGIN | REGISTER |
++-------------------------------+
+|                               |
+|            WELCOME            |
+|                               |
+|          LAST UPLOAD          |
+|                               |
+|  +----+ +----+ +----+ +----+  |
+|  |    | |    | |    | |    |  |
+|  +----+ +----+ +----+ +----+  |
+|                               |
++-------------------------------+
+|           copyright           |
++-------------------------------+
+-->
+        <header>
+            <div class="header">
+                <nav class="menu" >
+                    <table>
+                        <tr><td>Dashboard</td></tr>
+                        <tr><td>About Us</td></tr>
+                        <tr><td>Contatti</td></tr>
+                    </table>
+                </nav>
+                <div class="user-access" >
+                    <a href="/login.php" >Login</a>
+                    <a href="/register.php" >Register</a>
+                </div>
+            </div>
+        </header>
+
+        <section>
+            <div class="page-content">
+                <div class="welcome-panel">
+                    <span>WELCOME!</span>
+                </div>
+                <div class="last-upload-panel">
+                    <div class="last-upload-panel-writing">
+                        <span>Last Uploads</span>
+                    </div>
+                    <div class="last-upload-panel-wrapper">
+                        <!---->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <div class="footer">
+                <span><p>copyright @ 2011-2023 CoolFeature srl</p></span>
+            </div>
+        </footer>
+    </body>
+</html>
+
+<!-- /**
+_SERVER
+[
+ => DOCUMENT_ROOT
+ => REMOTE_ADDR
+ => REMOTE_PORT
+ => SERVER_SOFTWARE
+ => SERVER_PROTOCOL
+ => SERVER_NAME
+ => SERVER_PORT
+ => REQUEST_URI
+ => REQUEST_METHOD
+ => SCRIPT_NAME
+ => SCRIPT_FILE
+ => PHP_SELF
+ => REQUEST_TIME_FLOAT
+ => REQUEST_TIME
+// http request headers HTTP_*
+ => HTTP_HOST
+ => HTTP_USER_AGENT
+ => HTTP_ACCEPT
+ ...
+]
+ */
+-->
+
+<?php
+
+/*
+echo "<br/>";
+print_r($_POST);
+print_r($_GET);
+print_r($_FILES);*/
+?>
