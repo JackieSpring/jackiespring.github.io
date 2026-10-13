@@ -1,0 +1,170 @@
+:root {
+  --bg: #1b1b1b;
+  --bg-highlight: #ffa02e;
+  --ink: #ffffff;
+  --ink-soft: #a8a8a8;
+  --accent: #ffa02e;
+  --accent-strong: #e0501e;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 40px;
+
+  --font-display: "Jacquard 12", serif;
+  --font-body: "DotGothic16", monospace;
+
+  --shadow-hard: 4px 4px 0 var(--ink);
+  --shadow-hard-sm: 2px 2px 0 var(--ink);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--accent);
+}
+
+.container {
+  max-width: 720px;
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+/* Top nav, present on every page */
+
+.site-nav {
+  border-bottom: 3px solid var(--ink);
+  background: var(--bg);
+}
+
+.site-nav .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+}
+
+.nav-brand {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.nav-links a {
+  display: inline-block;
+  color: var(--ink);
+  text-decoration: none;
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--ink);
+  background: var(--bg);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  background: var(--bg-highlight);
+  color: var(--bg);
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+main {
+  padding-block: var(--space-5);
+}
+
+.h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 7vw, 3.2rem);
+  letter-spacing: 0.02em;
+}
+
+/* Statistics listing */
+
+.hw-list {
+  margin-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.hw-card {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  border: 2px solid var(--ink);
+  background: var(--bg);
+  box-shadow: var(--shadow-hard);
+  padding: var(--space-3);
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.hw-card:hover {
+  background: var(--bg-highlight);
+  color: var(--bg);
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.hw-card .label {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+}
+
+.tag {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+/* Generic page note (e.g. "page under construction") */
+
+.note {
+  margin-top: var(--space-3);
+  color: var(--ink-soft);
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: var(--space-5);
+}
+
+/* KaTeX tweaks, used only on pages with real formulas */
+
+.katex-display {
+  overflow-x: auto;
+  padding-block: var(--space-2);
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding-inline: var(--space-3);
+  }
+
+  main {
+    padding-block: var(--space-4);
+  }
+}
