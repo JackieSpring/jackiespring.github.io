@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Jacquard+12&family=DotGothic16&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/style.css">
 
-  <!-- KaTeX: pronto per quando aggiungerai formule, usa $...$ o $$...$$ nel testo -->
+  <!-- KaTeX: usa $...$ o $$...$$ nel testo -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
@@ -20,6 +20,10 @@
           {left: '$', right: '$', display: false}
         ]
       });"></script>
+  <script defer src="/assets/js/ecc-lib.js"></script>
+  <script defer src="/assets/js/keccak.js"></script>
+  <script defer src="/assets/js/bip39-words.js"></script>
+  <script defer src="/assets/js/hw2.js"></script>
 </head>
 <body>
   <header class="site-nav">
@@ -31,9 +35,152 @@
     </div>
   </header>
 
-  <main class="container">
+  <div class="tip" id="tip" role="tooltip"></div>
+
+  <main class="container container-wide hw-page">
     <h1 class="h1">Homework 2</h1>
-    <p class="note">Pagina in costruzione.</p>
+    <p class="lede">Dal seed del wallet all'indirizzo Ethereum: hashing, derivazione di chiavi e primitive crittografiche. La pipeline completa è calcolata dal vivo nel browser, con ogni valore intermedio visibile e confrontabile con un wallet reale.</p>
+
+    <div class="tiles">
+      <div class="tile"><div class="l">Controllo della pipeline</div><div class="v" id="t-w">calcolo…</div><div class="n">mnemonic di test → indirizzo Ethereum, confrontato col vettore pubblicato</div></div>
+      <div class="tile"><div class="l">Rilevazione errori EIP-55</div><div class="v" id="t-eip">calcolo…</div><div class="n">errori di una sola cifra intercettati dal checksum a maiuscole</div></div>
+    </div>
+
+    <!-- ====================== SEZIONE 1 ====================== -->
+    <section id="wallet">
+      <h2><span class="kicker">Parte pratica</span>Dal seed del wallet all'indirizzo Ethereum</h2>
+      <p class="sub">Un wallet trasforma dodici parole in un indirizzo spendibile attraverso sei standard che collaborano. Ogni passo qui sotto è calcolato dal vivo (PBKDF2 e HMAC con la Web Crypto del browser; secp256k1 e Keccak-256 con il codice dell'Homework 1), così ogni valore intermedio si può ispezionare.</p>
+
+      <div class="flow" aria-label="Pipeline del wallet">
+        <div class="node"><b>Mnemonic</b><span>12 o 24 parole da una lista di 2048</span><div class="kind">entropia + codifica</div></div>
+        <div class="arrow">BIP-39<br>PBKDF2</div>
+        <div class="node"><b>Seed</b><span>512 bit</span><div class="kind">key stretching</div></div>
+        <div class="arrow">BIP-32/44<br>HMAC-SHA512</div>
+        <div class="node"><b>Chiave privata</b><span>256 bit a m/44'/60'/0'/0/i</span><div class="kind">derivazione di chiavi</div></div>
+        <div class="arrow">secp256k1<br>k·G</div>
+        <div class="node"><b>Chiave pubblica</b><span>(x, y), 64 byte</span><div class="kind">crittografia a chiave pubblica</div></div>
+        <div class="arrow">Keccak-256<br>ultimi 20 byte</div>
+        <div class="node"><b>Indirizzo</b><span>160 bit, 40 cifre hex</span><div class="kind">hashing</div></div>
+        <div class="arrow">EIP-55<br>maiuscole = checksum</div>
+        <div class="node"><b>Indirizzo con checksum</b><span>stesse 40 cifre, maiuscole e minuscole</span><div class="kind">checksum + codifica</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="ctl">
+          <button class="btn" id="btnTest" type="button">Vettore di test</button>
+          <button class="btn" id="btnGen12" type="button">Nuove 12 parole casuali</button>
+          <button class="btn" id="btnGen24" type="button">Nuove 24 parole casuali</button>
+          <button class="btn" id="btnSwap" type="button">Cambia una parola</button>
+          <label>Account<input id="acct" type="number" min="0" max="99" value="0"></label>
+          <label>Indice indirizzo<input id="aidx" type="number" min="0" max="99" value="0"></label>
+        </div>
+        <label class="small" for="mn" style="display: block; margin-bottom: 4px">Mnemonic (scrivila o incollala; la parola di checksum viene verificata)</label>
+        <textarea id="mn" rows="2" spellcheck="false" autocomplete="off"></textarea>
+        <label class="small" for="pw" style="display: block; margin: 8px 0 4px">Passphrase BIP-39 opzionale (la «venticinquesima parola»); vuota di default</label>
+        <input class="t" id="pw" type="text" autocomplete="off" spellcheck="false" placeholder="(vuota)">
+        <div class="callout warn"><p>La mnemonic predefinita è un vettore di test pubblico (Hardhat / Anvil). Chiunque può derivarne le chiavi: non inviarvi mai fondi reali e non scrivere mai in una pagina web una mnemonic che protegge denaro vero.</p></div>
+        <div id="wOut"></div>
+      </div>
+
+      <h3>Riprodurlo con un wallet vero</h3>
+      <div class="panel flat">
+        <p class="small">La consegna suggerisce un confronto con MetaMask, Rabby, Exodus o Rainbow. Un modo sicuro: in un profilo del browser nuovo e vuoto, scegli «importa wallet» e incolla la mnemonic di test qui sopra. Il primo account deve mostrare <code>0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266</code> e il secondo <code>0x70997970C51812dc3A010C7d01b50e0d17dc79C8</code>: sono gli stessi indirizzi che questa pagina calcola per gli indici 0 e 1 (percorso <code>m/44'/60'/0'/0/i</code>). Cambiando qui la passphrase cambia tutta la catena degli indirizzi, ed è ciò che accade quando un hardware wallet usa una passphrase. Le stesse parole in un wallet con un percorso diverso (per esempio <code>m/44'/60'/i'/0/0</code> di Ledger Live) producono account diversi: è il motivo pratico per cui esiste BIP-44.</p>
+      </div>
+
+      <h3>Verifica statistica del livello di checksum</h3>
+      <div class="panel">
+        <p class="small">EIP-55 nasconde un checksum nelle maiuscole: si calcola l'hash Keccak-256 dell'indirizzo esadecimale in minuscolo e si scrive in maiuscolo ogni lettera la cui cifra di hash corrispondente è ≥ 8. Un indirizzo con L lettere porta quindi L bit di checksum (circa 15 in media, 40 cifre × 6/16). L'esperimento crea indirizzi casuali, cambia una cifra esadecimale in un punto qualsiasi (mantenendo le maiuscole originali delle altre) e conta quante volte un validatore se ne accorge.</p>
+        <div class="ctl"><label>Prove<select id="eipN"><option>5000</option><option selected>10000</option><option>60000</option></select></label><button class="btn primary" id="btnEip" type="button">Esegui simulazione</button></div>
+        <div id="eipOut" class="small"></div>
+      </div>
+    </section>
+
+    <!-- ====================== SEZIONE 2 ====================== -->
+    <section id="context">
+      <h2><span class="kicker">Contesto e spiegazione</span>Primitive, storia e perché ce ne sono diverse</h2>
+
+      <h3>Distinguere i concetti</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Concetto</th><th>Che cosa fa</th><th>Reversibile?</th><th>Input segreto?</th><th>Nella pipeline</th></tr></thead>
+        <tbody>
+          <tr><td><b>Generazione di chiavi</b></td><td>Crea materiale segreto nuovo e imprevedibile da una sorgente casuale</td><td>n/d</td><td>L'output è il segreto</td><td>I 128 o 256 bit di entropia dietro la mnemonic. È l'unico momento in cui entra casualità vera; tutto il resto è deterministico</td></tr>
+          <tr><td><b>Derivazione di chiavi</b></td><td>Espande o trasforma in modo deterministico un segreto in altre chiavi</td><td>No (a senso unico)</td><td>Sì</td><td>PBKDF2 trasforma le parole in un seed; HMAC-SHA512 in BIP-32 trasforma il seed in un albero di chiavi; BIP-44 fissa quale ramo usare</td></tr>
+          <tr><td><b>Crittografia a chiave pubblica</b></td><td>Lega una chiave privata e una pubblica, così la pubblica si può condividere e le firme verificare</td><td>Difficile (ECDLP)</td><td>La chiave privata</td><td>secp256k1: Q = kG, firme ECDSA</td></tr>
+          <tr><td><b>Hashing</b></td><td>Mappa un input qualsiasi in un'impronta di dimensione fissa; nessuna chiave coinvolta</td><td>No (resistente alla preimmagine)</td><td>No</td><td>Keccak-256 dei 64 byte della chiave pubblica; l'indirizzo sono gli ultimi 20 byte</td></tr>
+          <tr><td><b>Checksum</b></td><td>Rileva errori accidentali; non dà né segretezza né autenticazione</td><td>Sì, è solo ridondanza</td><td>No</td><td>Schema di maiuscole EIP-55, ultimi bit di BIP-39</td></tr>
+          <tr><td><b>Codifica</b></td><td>Cambia solo la rappresentazione, senza obiettivi di sicurezza</td><td>Sì, del tutto</td><td>No</td><td>Parole ↔ numeri a 11 bit, hex ↔ byte, prefisso «0x», lettere maiuscole/minuscole</td></tr>
+        </tbody></table></div>
+
+      <h3>I sei pezzi, un paragrafo ciascuno</h3>
+      <div class="grid g2">
+        <div class="panel"><h4>BIP-39 · mnemonic e seed</h4><p class="small" style="margin: 0">All'entropia di 128–256 bit si aggiunge un checksum SHA-256 (ENT/32 bit) e il tutto si taglia in gruppi da 11 bit; ogni gruppo indicizza la lista di 2048 parole. 12 parole = 128 + 4 bit, 24 parole = 256 + 8 bit. Il seed è <code>PBKDF2-HMAC-SHA512(mnemonic, "mnemonic" + passphrase, 2048 iterazioni)</code>, 64 byte. Le parole sono una codifica che una persona può trascrivere; il passo PBKDF2 è la derivazione di chiavi e aggiunge lavoro a chi prova a forzarla.</p></div>
+        <div class="panel"><h4>BIP-32 · chiavi gerarchiche deterministiche</h4><p class="small" style="margin: 0">La chiave master e il chain code sono le due metà di <code>HMAC-SHA512("Bitcoin seed", seed)</code>. Un figlio si deriva con <code>HMAC-SHA512(chaincode, dati ‖ indice)</code>; la metà sinistra si somma alla chiave del padre modulo n. Gli indici ≥ 2³¹ sono «hardened»: nell'HMAC entra la chiave privata del padre, quindi una chiave figlia con il suo chain code non permette di risalire al padre. Un solo backup copre un albero illimitato di chiavi.</p></div>
+        <div class="panel"><h4>BIP-44 · percorsi di derivazione</h4><p class="small" style="margin: 0">Una convenzione sopra BIP-32: <code>m / purpose' / coin_type' / account' / change / address_index</code>. Ethereum usa purpose 44 e coin type 60, Bitcoin coin type 0. Non aggiunge crittografia: fa sì che due wallet che la seguono ritrovino gli stessi account dalle stesse parole.</p></div>
+        <div class="panel"><h4>secp256k1 · il legame tra le chiavi</h4><p class="small" style="margin: 0">La curva y² = x³ + 7 su un campo primo a 256 bit. La chiave pubblica è Q = kG; le firme (ECDSA) provano la conoscenza di k senza rivelarla. Le firme di Ethereum sono recuperabili: dalla firma stessa si calcolano la chiave pubblica e quindi l'indirizzo del mittente.</p></div>
+        <div class="panel"><h4>Keccak-256 · hashing</h4><p class="small" style="margin: 0">I 64 byte grezzi <code>x ‖ y</code> (senza prefisso 0x04) vengono sottoposti a hash e gli ultimi 20 byte diventano l'indirizzo. L'hash accorcia l'identificatore e mette una seconda barriera, basata su hash, davanti alla chiave pubblica finché la prima firma non la rivela.</p></div>
+        <div class="panel"><h4>EIP-55 · checksum nelle maiuscole</h4><p class="small" style="margin: 0">Retrocompatibile: i byte dell'indirizzo non cambiano, solo le maiuscole codificano circa 15 bit di checksum. Il software che ignora le maiuscole funziona ancora; quello che le controlla intercetta quasi ogni errore di battitura (simulazione qui sopra).</p></div>
+      </div>
+
+      <h3>Cronologia</h3>
+      <div class="grid g2" style="align-items: start">
+        <div class="timeline">
+          <div class="ev"><div class="y">1977</div><b>RSA</b><span>Il primo crittosistema a chiave pubblica di largo uso (Rivest, Shamir, Adleman).</span></div>
+          <div class="ev"><div class="y">1985</div><b>Proposta la crittografia su curve ellittiche</b><span>Indipendentemente da Koblitz e Miller; l'ECDLP sostituisce la fattorizzazione come problema difficile.</span></div>
+          <div class="ev std"><div class="y">2001–2002</div><b>SHA-2 / SHA-512</b><span>SHA-256, -384, -512 pubblicati nel 2001 e standardizzati come FIPS 180-2 (2002). Usati poi in BIP-32 e BIP-39.</span></div>
+          <div class="ev btc"><div class="y">2009</div><b>Bitcoin</b><span>ECDSA su secp256k1, proof of work con SHA-256.</span></div>
+          <div class="ev std"><div class="y">2012</div><b>Keccak vince il concorso SHA-3</b><span>Il NIST sceglie la costruzione sponge progettata da Bertoni, Daemen, Peeters e Van Assche.</span></div>
+          <div class="ev btc"><div class="y">2012</div><b>BIP-32</b><span>Wallet gerarchici deterministici (Wuille).</span></div>
+        </div>
+        <div class="timeline">
+          <div class="ev btc"><div class="y">2013</div><b>BIP-39</b><span>Codice mnemonic per generare chiavi deterministiche.</span></div>
+          <div class="ev btc"><div class="y">2014</div><b>BIP-44</b><span>Gerarchia multi-account per wallet deterministici.</span></div>
+          <div class="ev std"><div class="y">2015</div><b>SHA-3 (FIPS 202)</b><span>Standardizza Keccak con un padding diverso. Ethereum parte lo stesso anno con il Keccak-256 originale.</span></div>
+          <div class="ev"><div class="y">2016</div><b>EIP-55</b><span>Indirizzi Ethereum con checksum a maiuscole miste.</span></div>
+          <div class="ev btc"><div class="y">2021</div><b>Taproot (BIP-340/341)</b><span>Le firme Schnorr su secp256k1 arrivano in Bitcoin.</span></div>
+          <div class="ev std"><div class="y">2024</div><b>Primi standard post-quantistici</b><span>NIST FIPS 203, 204, 205 (ML-KEM, ML-DSA, SLH-DSA).</span></div>
+        </div>
+      </div>
+      <div class="legend"><span><i style="background: var(--accent)"></i>generale / Ethereum</span><span><i style="background: var(--s2)"></i>Bitcoin</span><span><i style="background: var(--s3)"></i>standard di hash</span></div>
+
+      <h3>SHA-2 / SHA-512 contro Keccak / SHA-3</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th></th><th>SHA-2 (SHA-256, SHA-512)</th><th>Keccak-256 (Ethereum)</th><th>SHA3-256 (FIPS 202)</th></tr></thead>
+        <tbody>
+          <tr><td><b>Progetto</b></td><td>Catena Merkle–Damgård di una funzione di compressione Davies–Meyer</td><td colspan="2">Sponge sulla permutazione Keccak-f a 1600 bit: rate 1088 bit, capacity 512 bit</td></tr>
+          <tr><td><b>Length extension</b></td><td>Possibile: da H(m) un attaccante calcola H(m ‖ pad ‖ m′) senza conoscere m. HMAC aggira il problema</td><td colspan="2">Non possibile, perché la parte capacity dello stato non viene mai emessa</td></tr>
+          <tr><td><b>Padding / bit di dominio</b></td><td>0x80, zeri, lunghezza a 64 o 128 bit</td><td>pad10*1: primo byte di padding <code>0x01</code></td><td>Aggiunge i bit <code>01</code> poi pad10*1: primo byte di padding <code>0x06</code></td></tr>
+          <tr><td><b>Dove compare qui</b></td><td>SHA-256: checksum BIP-39. SHA-512: PBKDF2 e HMAC in BIP-39/32. Bitcoin: SHA-256 per PoW e txid</td><td>Indirizzi Ethereum, hash delle transazioni, state trie, selettori di funzione</td><td>Non usato dal protocollo centrale di Ethereum</td></tr>
+        </tbody></table></div>
+      <p class="sub" style="margin-top: 8px">Le due colonne sponge differiscono per un solo byte di padding, ma basta per dare output completamente diversi sullo stesso messaggio. Ethereum ha fissato il proprio hash prima che il NIST finisse lo standard, quindi «keccak256» in Solidity e «SHA3-256» in una libreria crittografica sono funzioni diverse. Provalo:</p>
+      <div class="panel">
+        <label class="small" for="hIn" style="display: block; margin-bottom: 4px">Messaggio (UTF-8)</label>
+        <input class="t" id="hIn" type="text" value="hello" autocomplete="off">
+        <div class="tbl-wrap" style="margin-top: 8px"><table><tbody id="hOut"></tbody></table></div>
+        <p class="small" style="margin: 8px 0 0" id="hNote"></p>
+      </div>
+
+      <h3>Perché un solo algoritmo non basta</h3>
+      <p>Ogni primitiva è costruita per un obiettivo di sicurezza diverso, e nessun algoritmo da solo li soddisfa tutti.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Obiettivo</th><th>Primitiva</th><th>Perché un'altra non andrebbe bene</th></tr></thead>
+        <tbody>
+          <tr><td>Fare il backup di un solo segreto e recuperare tutto da quello</td><td>BIP-39 → BIP-32 → BIP-44</td><td>Un hash o una curva non danno un formato di backup portabile, un albero di account, né un accordo tra wallet su quale percorso usare. Questi standard riguardano la gestione delle chiavi, non ipotesi di difficoltà.</td></tr>
+          <tr><td>Pubblicare qualcosa che non dice nulla su k ma permette ad altri di verificare le firme</td><td>secp256k1 (ECDSA)</td><td>Un hash non può verificare una firma senza il segreto; solo una struttura asimmetrica permette a un valore pubblico di controllare un'operazione privata. La stessa struttura (omomorfismo) è ciò che un hash non deve avere.</td></tr>
+          <tr><td>Identificatore corto, uniforme, di dimensione fissa</td><td>Keccak-256</td><td>Un punto della curva sono 64 byte con struttura algebrica; l'indirizzo ne richiede 20 senza alcuna struttura, e un hash lo dà per qualsiasi input.</td></tr>
+          <tr><td>Rilevare errori di battitura prima di inviare denaro</td><td>EIP-55</td><td>Serve solo ridondanza, non sicurezza; è economico e resta compatibile con gli indirizzi in minuscolo. Una firma crittografica qui aggiungerebbe dimensione senza dare nulla in più di un checksum.</td></tr>
+        </tbody></table></div>
+
+      <h3>Comportamento statistico di ogni stadio</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Stadio</th><th>Proprietà statistica</th><th>Misurata in questa pagina</th></tr></thead>
+        <tbody>
+          <tr><td>Entropia</td><td>Deve essere uniforme; ogni bit imprevedibile. 12 parole portano 128 bit; una frase di 12 parole a caso supera il checksum BIP-39 con probabilità 1/16</td><td>CSPRNG del browser (<code>crypto.getRandomValues</code>)</td></tr>
+          <tr><td>PBKDF2 / HMAC-SHA512</td><td>Output pseudo-casuale; 2048 iterazioni moltiplicano per 2048 il costo di chi prova a forzare</td><td>Il seed cambia del tutto con una lettera diversa nella mnemonic (sezione pratica)</td></tr>
+          <tr><td>kG su secp256k1</td><td>Bit uniformi, nessuna correlazione input–output, avalanche vicina a 128 / 256</td><td><a href="/statistics/homework1/">Homework 1, sezione 2</a></td></tr>
+          <tr><td>Keccak-256</td><td>Avalanche ≈ 50%, byte uniformi</td><td>Strumento di confronto qui sopra (due messaggi vicini)</td></tr>
+          <tr><td>EIP-55</td><td>Probabilità di errore non rilevato ≈ 2<sup>−L</sup> per L lettere (≈ 3×10⁻⁵ in media)</td><td>Simulazione degli errori di battitura</td></tr>
+        </tbody></table></div>
+    </section>
 
     <a class="back-link" href="/statistics/">&larr; Torna a Statistics</a>
   </main>
