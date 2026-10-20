@@ -1,4 +1,4 @@
-/* Libreria per l'Homework 1: curva toy, secp256k1 (BigInt), SHA-256, statistica. */
+/* Library for Homework 1 and later: toy curve, secp256k1 (BigInt), SHA-256, statistics. */
 const Lib = (() => {
   // ---------- toy curve  y^2 = x^3 + 7 (mod p) ----------
   const toy = {
@@ -11,10 +11,10 @@ const Lib = (() => {
       const m = v => ((v % 17) + 17) % 17;
       if (P === null) return { R: Q, kind: 'P = O  →  P+Q = Q' };
       if (Q === null) return { R: P, kind: 'Q = O  →  P+Q = P' };
-      if (P[0] === Q[0] && m(P[1] + Q[1]) === 0) return { R: null, kind: 'Q = −P (retta verticale)  →  P+Q = O (punto all\'infinito)' };
+      if (P[0] === Q[0] && m(P[1] + Q[1]) === 0) return { R: null, kind: 'Q = −P (vertical line)  →  P+Q = O (point at infinity)' };
       let lam, kind;
-      if (P[0] === Q[0] && P[1] === Q[1]) { lam = m(3 * P[0] * P[0] * this.inv(2 * P[1])); kind = 'raddoppio (tangente)'; }
-      else { lam = m((Q[1] - P[1]) * this.inv(Q[0] - P[0])); kind = 'somma (corda)'; }
+      if (P[0] === Q[0] && P[1] === Q[1]) { lam = m(3 * P[0] * P[0] * this.inv(2 * P[1])); kind = 'doubling (tangent)'; }
+      else { lam = m((Q[1] - P[1]) * this.inv(Q[0] - P[0])); kind = 'addition (chord)'; }
       const x = m(lam * lam - P[0] - Q[0]);
       const y = m(lam * (P[0] - x) - P[1]);
       return { R: [x, y], kind, lambda: lam, line: [P, Q] };
@@ -74,7 +74,27 @@ const Lib = (() => {
     for (let kk = k; kk > 0n; kk >>= 1n, i++) if (kk & 1n) J = jaddMixed(J[0], J[1], J[2], T[i][0], T[i][1]);
     return toAffine(...J);
   }
-  const hex = (b, n = 64) => b.toString(16).padStart(n, '0');
+  // general scalar multiplication (double-and-add, Jacobian) for any affine point
+  function mulPoint(k, Pt) {
+    let J = [0n, 1n, 0n];
+    for (let i = k.toString(2).length - 1; i >= 0; i--) { J = jdbl(J[0], J[1], J[2]); if ((k >> BigInt(i)) & 1n) J = jaddMixed(J[0], J[1], J[2], Pt[0], Pt[1]); }
+    return toAffine(J[0], J[1], J[2]);
+  }
+  function addAffine(A, B) { const J = A === null ? [0n, 1n, 0n] : [A[0], A[1], 1n]; if (B === null) return A; return toAffine(...jaddMixed(J[0], J[1], J[2], B[0], B[1])); }
+  const neg = A => A === null ? null : [A[0], md(-A[1])];
+  // Montgomery batch inversion: Jacobian list -> affine list (null for the point at infinity)
+  function batchAffine(Js) {
+    const n = Js.length, pref = new Array(n); let acc = 1n;
+    for (let i = 0; i < n; i++) { pref[i] = acc; if (Js[i][2] !== 0n) acc = acc * Js[i][2] % P; }
+    let iv = inv(acc); const out = new Array(n);
+    for (let i = n - 1; i >= 0; i--) {
+      if (Js[i][2] === 0n) { out[i] = null; continue; }
+      const zi = iv * pref[i] % P; iv = iv * Js[i][2] % P; const z2 = zi * zi % P;
+      out[i] = [Js[i][0] * z2 % P, Js[i][1] * z2 % P * zi % P];
+    }
+    return out;
+  }
+  const hex =(b, n = 64) => b.toString(16).padStart(n, '0');
   const onCurve = Q => Q && md(Q[1] * Q[1] - Q[0] ** 3n - 7n) === 0n;
 
   // ---------- SHA-256 (sync) ----------
@@ -132,6 +152,6 @@ const Lib = (() => {
   const normSf = z => 0.5 * (1 - erf(z / Math.SQRT2));
   function erf(x) { const s = Math.sign(x); x = Math.abs(x); const t = 1 / (1 + 0.3275911 * x); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return s * y; }
 
-  return { toy, secp: { P, N, GX, GY, mulG, onCurve, inv, table }, sha256, enc, toHex, fromHex, bigFromBytes, bytesFromBig, hex, popcnt8, hamming, rng, rand256, chi2p, mean, sd, pearson, spearman, normSf };
+  return { toy, secp: { P, N, GX, GY, mulG, mulPoint, addAffine, neg, batchAffine, jdbl, jaddMixed, toAffine, onCurve, inv, table, md }, sha256, enc, toHex, fromHex, bigFromBytes, bytesFromBig, hex, popcnt8, hamming, rng, rand256, chi2p, mean, sd, pearson, spearman, normSf };
 })();
 if (typeof module !== 'undefined') module.exports = Lib;

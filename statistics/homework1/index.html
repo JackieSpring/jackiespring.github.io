@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Jacquard+12&family=DotGothic16&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/style.css">
 
-  <!-- KaTeX: usa $...$ o $$...$$ nel testo -->
+  <!-- KaTeX: use $...$ or $$...$$ in the text -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
@@ -37,148 +37,148 @@
 
   <main class="container container-wide hw-page">
     <h1 class="h1">Homework 1</h1>
-    <p class="lede">Dalla chiave privata alla chiave pubblica con la moltiplicazione scalare su curva ellittica: un esempio giocattolo da seguire a mano e un'esplorazione statistica su secp256k1, la curva di Ethereum. Tutto quello che vedi qui sotto gira nel browser e si può rieseguire con altri valori.</p>
+    <p class="lede">From private key to public key with elliptic-curve scalar multiplication: a toy example to follow by hand and a statistical exploration on secp256k1, the Ethereum curve. Everything you see below runs in the browser and can be re-run with other values.</p>
 
     <div class="tiles">
-      <div class="tile"><div class="l">Chiave pubblica toy</div><div class="v">Q = 6G = (5, 8)</div><div class="n">k = 6, G = (1, 5) su y² = x³ + 7 (mod 17)</div></div>
-      <div class="tile"><div class="l">Gruppo toy</div><div class="v">18 punti · ord(G) = 9</div><div class="n">17 punti affini e il punto all'infinito</div></div>
-      <div class="tile"><div class="l">Avalanche su secp256k1</div><div class="v" id="t-av">calcolo…</div><div class="n">bit di x(kG) che cambiano invertendo 1 bit di k (ideale 128 ± 8)</div></div>
-      <div class="tile"><div class="l">Uniformità dei byte (χ²)</div><div class="v" id="t-chi">calcolo…</div><div class="n">p-value sui byte di x(kG); una sorgente equa dà p distribuito su (0, 1)</div></div>
+      <div class="tile"><div class="l">Toy public key</div><div class="v">Q = 6G = (5, 8)</div><div class="n">k = 6, G = (1, 5) su y² = x³ + 7 (mod 17)</div></div>
+      <div class="tile"><div class="l">Toy group</div><div class="v">18 points · ord(G) = 9</div><div class="n">17 affine points and the point at infinity</div></div>
+      <div class="tile"><div class="l">Avalanche on secp256k1</div><div class="v" id="t-av">computing…</div><div class="n">bits of x(kG) that change when 1 bit of k is flipped (ideal 128 ± 8)</div></div>
+      <div class="tile"><div class="l">Byte uniformity (χ²)</div><div class="v" id="t-chi">computing…</div><div class="n">p-value on the bytes of x(kG); a fair source gives p spread over (0, 1)</div></div>
     </div>
 
-    <!-- ====================== SEZIONE 1 ====================== -->
+    <!-- ====================== SECTION 1 ====================== -->
     <section id="toy">
-      <h2><span class="kicker">Parte pratica</span>Chiave privata → chiave pubblica su una curva toy</h2>
-      <p class="sub">La moltiplicazione scalare $Q = kG$ è facile da calcolare e, si ritiene, difficile da invertire: è la proprietà su cui si basa un wallet. La chiave $k$ resta segreta, $Q$ si può pubblicare. L'obiettivo è vedere il meccanismo su una curva abbastanza piccola da seguirla a mano, non costruire un vero sistema crittografico.</p>
+      <h2><span class="kicker">Hands-on part</span>Private key → public key on a toy curve</h2>
+      <p class="sub">Scalar multiplication $Q = kG$ is easy to compute and, it is believed, hard to invert: this is the property a wallet relies on. The key $k$ stays secret, $Q$ can be published. The goal is to see the mechanism on a curve small enough to follow by hand, not to build a real cryptosystem.</p>
 
       <div class="grid g2">
         <div class="panel">
-          <h4>Parametri</h4>
-          <div class="eq">curva    E: y² = x³ + 7  (mod 17)
+          <h4>Parameters</h4>
+          <div class="eq">curve    E: y² = x³ + 7  (mod 17)
 base     G = (1, 5)
-verifica 5² = 25 ≡ 8,  1³ + 7 = 8  ✓
-privata  k = 6
-pubblica Q = kG = 6G</div>
-          <p class="small" style="margin-top: 16px">Contando le soluzioni dell'equazione si trovano 17 punti affini; con il punto all'infinito $O$ il gruppo ha 18 elementi. Sommando $G$ a se stesso si torna a $O$ dopo 9 passi: $G$ genera un sottogruppo di ordine 9 e ogni $k$ si comporta come $k \bmod 9$. Questo toy non offre alcuna sicurezza: il gruppo è minuscolo e, poiché $17 \equiv 2 \pmod 3$, la curva è supersingolare, il che rende i logaritmi discreti ancora più facili.</p>
+check    5² = 25 ≡ 8,  1³ + 7 = 8  ✓
+private  k = 6
+public   Q = kG = 6G</div>
+          <p class="small" style="margin-top: 16px">Counting the solutions of the equation gives 17 affine points; with the point at infinity $O$ the group has 18 elements. Adding $G$ to itself returns to $O$ after 9 steps: $G$ generates a subgroup of order 9 and every $k$ behaves like $k \bmod 9$. This toy offers no security at all: the group is tiny and, since $17 \equiv 2 \pmod 3$, the curve is supersingular, which makes discrete logarithms even easier.</p>
         </div>
         <div class="panel">
-          <h4>La somma di punti in 4 righe</h4>
+          <h4>Point addition in 4 lines</h4>
           <div class="eq">P ≠ Q:  λ = (y₂ − y₁)(x₂ − x₁)⁻¹
 P = Q:  λ = 3x₁² (2y₁)⁻¹
 x₃ = λ² − x₁ − x₂
-y₃ = λ(x₁ − x₃) − y₁      (tutto mod p)
+y₃ = λ(x₁ − x₃) − y₁      (all mod p)
 P + (−P) = O,  −(x, y) = (x, −y)</div>
-          <p class="small" style="margin-top: 16px">Geometricamente: si traccia la retta per $P$ e $Q$ (la tangente se $P = Q$), si prende la sua terza intersezione con la curva e la si riflette rispetto all'asse x. Modulo 17 la «retta» è l'insieme dei residui $y \equiv \lambda(x - x_1) + y_1$, disegnati come puntini nel grafico qui sotto.</p>
+          <p class="small" style="margin-top: 16px">Geometrically: draw the line through $P$ and $Q$ (the tangent if $P = Q$), take its third intersection with the curve and reflect it across the x axis. Modulo 17 the “line” is the set of residues $y \equiv \lambda(x - x_1) + y_1$, drawn as dots in the plot below.</p>
         </div>
       </div>
 
-      <h3>Laboratorio: guarda costruirsi kG</h3>
+      <h3>Lab: watch kG being built</h3>
       <div class="panel">
         <div class="ctl">
-          <label>Chiave privata k<input id="k" type="number" min="1" max="99" value="6"></label>
-          <label>Punto base<select id="base"></select></label>
-          <label>Metodo<select id="method"><option value="add">Somme ripetute: G, 2G, …, kG</option><option value="dbl">Double-and-add (binario di k)</option></select></label>
-          <label>Velocità<select id="speed"><option value="1800">Lenta (1.8 s)</option><option value="1000" selected>Media (1 s)</option><option value="450">Veloce</option></select></label>
-          <button class="btn primary" id="btnPlay" type="button">▶ Avvia</button>
-          <button class="btn" id="btnPrev" type="button" aria-label="Passo precedente">◀</button>
-          <button class="btn" id="btnNext" type="button" aria-label="Passo successivo">▶|</button>
+          <label>Private key k<input id="k" type="number" min="1" max="99" value="6"></label>
+          <label>Base point<select id="base"></select></label>
+          <label>Method<select id="method"><option value="add">Repeated additions: G, 2G, …, kG</option><option value="dbl">Double-and-add (binary of k)</option></select></label>
+          <label>Speed<select id="speed"><option value="1800">Slow (1.8 s)</option><option value="1000" selected>Medium (1 s)</option><option value="450">Fast</option></select></label>
+          <button class="btn primary" id="btnPlay" type="button">▶ Play</button>
+          <button class="btn" id="btnPrev" type="button" aria-label="Previous step">◀</button>
+          <button class="btn" id="btnNext" type="button" aria-label="Next step">▶|</button>
         </div>
         <div class="grid g-lab">
           <figure class="fig"><div id="plane"></div>
-            <div class="legend"><span><i style="background:var(--s1)"></i>punto corrente P</span><span><i style="background:var(--s2)"></i>G</span><span><i style="background:var(--s3)"></i>risultato</span><span><i style="background:var(--rule2)"></i>altri punti / residui della retta</span></div>
-            <figcaption>I 17 punti affini di E su F₁₇. L'orbita del punto base è cerchiata; la retta per P e G è mostrata come residui mod 17.</figcaption></figure>
+            <div class="legend"><span><i style="background:var(--s1)"></i>current point P</span><span><i style="background:var(--s2)"></i>G</span><span><i style="background:var(--s3)"></i>result</span><span><i style="background:var(--rule2)"></i>other points / line residues</span></div>
+            <figcaption>The 17 affine points of E over F₁₇. The orbit of the base point is circled; the line through P and G is shown as residues mod 17.</figcaption></figure>
           <div style="min-width: 0">
-            <div class="panel" style="background: var(--panel2); box-shadow: none"><div id="stepInfo" class="small">Premi Avvia, oppure usa le frecce.</div></div>
-            <h4>Output del programma</h4>
+            <div class="panel" style="background: var(--panel2); box-shadow: none"><div id="stepInfo" class="small">Press Play, or use the arrows.</div></div>
+            <h4>Program output</h4>
             <pre class="out" id="outLog" aria-live="polite"></pre>
           </div>
         </div>
-        <h4 style="margin-top: 16px">Tutti i passi</h4>
-        <div class="tbl-wrap steps"><table><thead><tr><th>#</th><th>operazione</th><th>P</th><th>+ Q</th><th class="num" style="text-transform: none">λ</th><th>risultato</th></tr></thead><tbody id="stepBody"></tbody></table></div>
+        <h4 style="margin-top: 16px">All steps</h4>
+        <div class="tbl-wrap steps"><table><thead><tr><th>#</th><th>operation</th><th>P</th><th>+ Q</th><th class="num" style="text-transform: none">λ</th><th>result</th></tr></thead><tbody id="stepBody"></tbody></table></div>
         <div class="callout" id="pubkeyBox"></div>
       </div>
 
-      <h3>La stessa operazione sui numeri reali</h3>
-      <p class="sub">Su $\mathbb{R}$ la curva $y^2 = x^3 + 7$ è liscia e la regola corda-tangente si può disegnare direttamente. Il grafico sul campo finito è la stessa regola con tutte le coordinate ridotte modulo 17.</p>
+      <h3>The same operation over the real numbers</h3>
+      <p class="sub">Over $\mathbb{R}$ the curve $y^2 = x^3 + 7$ is smooth and the chord-and-tangent rule can be drawn directly. The plot over the finite field is the same rule with all coordinates reduced modulo 17.</p>
       <div class="panel">
-        <div class="ctl"><label>Operazione<select id="rcMode"><option value="add">P + Q (corda)</option><option value="dbl">2P (tangente)</option></select></label>
-          <label>x di P<input id="rcPx" type="range" min="-1.8" max="2.6" step="0.05" value="-1.2"></label>
-          <label>x di Q<input id="rcQx" type="range" min="-1.8" max="2.6" step="0.05" value="1.4"></label></div>
+        <div class="ctl"><label>Operation<select id="rcMode"><option value="add">P + Q (chord)</option><option value="dbl">2P (tangent)</option></select></label>
+          <label>x of P<input id="rcPx" type="range" min="-1.8" max="2.6" step="0.05" value="-1.2"></label>
+          <label>x of Q<input id="rcQx" type="range" min="-1.8" max="2.6" step="0.05" value="1.4"></label></div>
         <figure class="fig" style="max-width: 640px; margin-inline: auto"><div id="realCurve"></div><figcaption id="rcCap"></figcaption></figure>
       </div>
 
-      <h3>Il programma</h3>
-      <p class="sub">L'intera implementazione toy è nel listato qui sotto. È il codice che il laboratorio esegue (con un po' di contabilità in più per l'animazione).</p>
+      <h3>The program</h3>
+      <p class="sub">The whole toy implementation is in the listing below. It is the code the lab runs (with a bit more bookkeeping for the animation).</p>
       <div class="panel">
-        <div class="row" style="justify-content: space-between; margin-bottom: 8px"><span class="pill" id="codeLines">toy-ecc.js</span><button class="btn sm" id="copyCode" type="button">Copia codice</button></div>
+        <div class="row" style="justify-content: space-between; margin-bottom: 8px"><span class="pill" id="codeLines">toy-ecc.js</span><button class="btn sm" id="copyCode" type="button">Copy code</button></div>
         <pre id="codeListing"></pre>
-        <h4 style="margin-top: 16px">Output del listato (k = 6)</h4>
+        <h4 style="margin-top: 16px">Listing output (k = 6)</h4>
         <pre id="codeOut" class="out"></pre>
       </div>
     </section>
 
-    <!-- ====================== SEZIONE 2 ====================== -->
+    <!-- ====================== SECTION 2 ====================== -->
     <section id="stats">
-      <h2><span class="kicker">Esplorazione statistica</span>Che aspetto ha statisticamente kG?</h2>
-      <p class="sub">La consegna elenca diverse proprietà da guardare: distribuzione delle coordinate, frequenza dei valori, bilanciamento dei bit, uniformità, correlazione input/output, avalanche. Seguono due esperimenti. Prima uno esaustivo sulla curva toy, dove si possono elencare tutti i punti. Poi uno campionato sulla vera curva secp256k1, con aritmetica esatta a 256 bit (BigInt), dove i numeri hanno davvero un significato.</p>
+      <h2><span class="kicker">Statistical exploration</span>What does kG look like statistically?</h2>
+      <p class="sub">The assignment lists several properties to look at: distribution of the coordinates, frequency of values, bit balance, uniformity, input/output correlation, avalanche. Two experiments follow. First an exhaustive one on the toy curve, where all points can be listed. Then a sampled one on the real secp256k1 curve, with exact 256-bit arithmetic (BigInt), where the numbers actually mean something.</p>
 
-      <h3>2.1 Curva toy, esaustivo</h3>
+      <h3>2.1 Toy curve, exhaustive</h3>
       <div class="panel">
-        <div class="ctl"><label>Punto base<select id="sBase"></select></label>
+        <div class="ctl"><label>Base point<select id="sBase"></select></label>
           <span class="small" id="toyFactsLine"></span></div>
         <div class="grid g3">
-          <figure class="fig"><div id="toyHistX"></div><figcaption>Frequenza di ogni valore di x su un periodo completo (tutti i punti 1·G … n·G, escluso O).</figcaption></figure>
-          <figure class="fig"><div id="toyHistY"></div><figcaption>Frequenza di ogni valore di y sullo stesso periodo.</figcaption></figure>
-          <figure class="fig"><div id="toyScatter"></div><figcaption>Input contro output: k in orizzontale, x(kG) in verticale, k = 1…40. I vuoti sono i k ≡ 0 (mod n), dove kG = O.</figcaption></figure>
+          <figure class="fig"><div id="toyHistX"></div><figcaption>Frequency of each x value over a full period (all points 1·G … n·G, excluding O).</figcaption></figure>
+          <figure class="fig"><div id="toyHistY"></div><figcaption>Frequency of each y value over the same period.</figcaption></figure>
+          <figure class="fig"><div id="toyScatter"></div><figcaption>Input against output: k horizontal, x(kG) vertical, k = 1…40. The gaps are the k ≡ 0 (mod n), where kG = O.</figcaption></figure>
         </div>
         <div class="tbl-wrap" style="margin-top: 16px"><table><tbody id="toyFacts"></tbody></table></div>
-        <div class="callout"><p><b>Leggere i risultati toy.</b> Scegli il punto base (6, 6), che genera tutti i 18 elementi, per vedere il quadro completo. Su un periodo intero la mappa k ↦ kG è una biiezione sul sottogruppo, quindi ogni punto compare esattamente una volta. Le coppie (x, y) sono uniformi per costruzione, non perché la mappa «mescoli» qualcosa. Le due coordinate si comportano in modo molto diverso: su questa curva ogni y da 0 a 16 compare una volta (la mappa cubo è una biiezione mod 17, quindi y determina x), mentre solo 9 dei 17 valori possibili di x compaiono, e x(kG) = x(−kG), quindi i valori vengono a coppie speculari. Lo scatter è un disegno ripetuto e simmetrico, l'opposto di un avalanche. Con 18 elementi nessuna statistica ha significato crittografico: il toy mostra solo la struttura.</p></div>
+        <div class="callout"><p><b>Reading the toy results.</b> Choose the base point (6, 6), which generates all 18 elements, to see the full picture. Over a whole period the map k ↦ kG is a bijection onto the subgroup, so every point appears exactly once. The (x, y) pairs are uniform by construction, not because the map “mixes” anything. The two coordinates behave very differently: on this curve every y from 0 to 16 appears once (the cube map is a bijection mod 17, so y determines x), while only 9 of the 17 possible x values appear, and x(kG) = x(−kG), so values come in mirror pairs. The scatter is a repeated, symmetric pattern, the opposite of an avalanche. With 18 elements no statistic has cryptographic meaning: the toy only shows the structure.</p></div>
       </div>
 
-      <h3>2.2 Curva reale: secp256k1, campionata</h3>
-      <p class="sub">Lo stesso esperimento con la curva usata da Bitcoin ed Ethereum: $p = 2^{256} - 2^{32} - 977$, ordine del gruppo $n \approx 2^{256}$, $G$ il generatore standard. Per ogni chiave privata $k$ campionata la pagina calcola $Q = kG$ con aritmetica esatta e analizza i 256 bit dell'ascissa. Le chiavi arrivano da un PRNG con seme, quindi ogni esecuzione è riproducibile. La modalità «sequenziale» usa $k = 1, 2, 3, \dots$, il caso più difficile per una funzione che deve nascondere il proprio input.</p>
+      <h3>2.2 Real curve: secp256k1, sampled</h3>
+      <p class="sub">The same experiment with the curve used by Bitcoin and Ethereum: $p = 2^{256} - 2^{32} - 977$, group order $n \approx 2^{256}$, $G$ the standard generator. For each sampled private key $k$ the page computes $Q = kG$ with exact arithmetic and analyses the 256 bits of the x coordinate. Keys come from a seeded PRNG, so every run is reproducible. The “sequential” mode uses $k = 1, 2, 3, \dots$, the hardest case for a function that must hide its input.</p>
       <div class="panel">
         <div class="ctl">
-          <label>Campioni<select id="sN"><option>500</option><option selected>1000</option><option>2500</option><option>5000</option></select></label>
-          <label>Chiavi<select id="sMode"><option value="rand">Casuali a 256 bit</option><option value="seq">Sequenziali 1, 2, 3, …</option></select></label>
-          <label>Seme<input id="sSeed" type="number" value="2026"></label>
-          <button class="btn primary" id="btnRun" type="button">Esegui esperimento</button>
+          <label>Samples<select id="sN"><option>500</option><option selected>1000</option><option>2500</option><option>5000</option></select></label>
+          <label>Keys<select id="sMode"><option value="rand">Random 256-bit</option><option value="seq">Sequential 1, 2, 3, …</option></select></label>
+          <label>Seed<input id="sSeed" type="number" value="2026"></label>
+          <button class="btn primary" id="btnRun" type="button">Run experiment</button>
           <span class="small" id="sProg"></span>
         </div>
-        <div class="tbl-wrap"><table><thead><tr><th>Test</th><th>Risultato</th><th>Atteso per valori casuali ideali a 256 bit</th><th>Esito</th></tr></thead><tbody id="secpTable"></tbody></table></div>
+        <div class="tbl-wrap"><table><thead><tr><th>Test</th><th>Result</th><th>Expected for ideal random 256-bit values</th><th>Verdict</th></tr></thead><tbody id="secpTable"></tbody></table></div>
         <div class="grid g2" style="margin-top: 16px">
-          <figure class="fig"><div id="chBits"></div><figcaption>Bilanciamento dei bit: z-score della frequenza degli 1 in ciascuna delle 256 posizioni di x. La fascia grigia è ±3σ.</figcaption></figure>
-          <figure class="fig"><div id="chBytes"></div><figcaption>Valori dei byte di x, raggruppati in 16 intervalli da 16 valori (linea tratteggiata = conteggio atteso).</figcaption></figure>
-          <figure class="fig"><div id="chHW"></div><figcaption>Peso di Hamming di x (numero di bit a 1) contro la curva Binomiale(256, ½).</figcaption></figure>
-          <figure class="fig"><div id="chAv"></div><figcaption>Avalanche: si inverte un bit casuale di k e si contano quanti dei 256 bit di x cambiano. Moltiplicazione su curva contro SHA-256 sulle stesse due chiavi.</figcaption></figure>
-          <figure class="fig"><canvas id="chScatter" width="560" height="320" aria-label="Scatter di k contro x(kG)"></canvas><figcaption>Input contro output: al massimo i primi 1500 campioni, indice i contro x(kᵢG)/p.</figcaption></figure>
-          <figure class="fig"><canvas id="chHeat" width="640" height="260" aria-label="Matrice di avalanche"></canvas><figcaption>Matrice di avalanche: righe = 24 bit di input invertiti, colonne = 256 bit di output, colore = probabilità che il bit di output cambi (ideale 0.5 ovunque).</figcaption></figure>
+          <figure class="fig"><div id="chBits"></div><figcaption>Bit balance: z-score of the frequency of 1s in each of the 256 positions of x. The grey band is ±3σ.</figcaption></figure>
+          <figure class="fig"><div id="chBytes"></div><figcaption>Byte values of x, grouped into 16 bins of 16 values (dashed line = expected count).</figcaption></figure>
+          <figure class="fig"><div id="chHW"></div><figcaption>Hamming weight of x (number of 1 bits) against the Binomial(256, ½) curve.</figcaption></figure>
+          <figure class="fig"><div id="chAv"></div><figcaption>Avalanche: flip one random bit of k and count how many of the 256 bits of x change. Curve multiplication against SHA-256 on the same two keys.</figcaption></figure>
+          <figure class="fig"><canvas id="chScatter" width="560" height="320" aria-label="Scatter of k against x(kG)"></canvas><figcaption>Input against output: at most the first 1500 samples, index i against x(kᵢG)/p.</figcaption></figure>
+          <figure class="fig"><canvas id="chHeat" width="640" height="260" aria-label="Avalanche matrix"></canvas><figcaption>Avalanche matrix: rows = 24 flipped input bits, columns = 256 output bits, colour = probability that the output bit changes (ideal 0.5 everywhere).</figcaption></figure>
         </div>
       </div>
 
-      <h3>2.3 Quali proprietà contano per quale primitiva</h3>
+      <h3>2.3 Which properties matter for which primitive</h3>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Proprietà</th><th>Osservata per kG</th><th>Funzione one-way / ECDLP</th><th>Hash crittografico</th></tr></thead>
+        <thead><tr><th>Property</th><th>Observed for kG</th><th>One-way function / ECDLP</th><th>Cryptographic hash</th></tr></thead>
         <tbody>
-          <tr><td>Deterministica, calcolo diretto veloce</td><td>Lo stesso k dà sempre lo stesso Q; circa 0.6 ms per kG qui</td><td>Richiesta</td><td>Richiesta</td></tr>
-          <tr><td>Difficile da invertire</td><td>Ricavare k da Q è l'ECDLP: il rho di Pollard richiede circa √n ≈ 2¹²⁸ operazioni di gruppo su secp256k1</td><td><b>La proprietà che la definisce</b></td><td>Si chiama resistenza alla preimmagine; la difficoltà viene dal rimescolamento, non dall'algebra</td></tr>
-          <tr><td>Output uniforme</td><td>I bit di x sembrano bilanciati (test sopra). Ma x non è una stringa uniforme a 256 bit: solo circa metà dei valori sono ascisse valide, e y è fissata da x a meno del segno</td><td>Utile, non richiesta</td><td>Richiesta: gli output devono essere indistinguibili da casuali</td></tr>
-          <tr><td>Avalanche</td><td>Un bit invertito in input cambia circa 128 bit su 256 in output: la statistica sembra ideale</td><td>Non richiesta. Superarla mostra solo che l'output nasconde la struttura locale</td><td><b>Progettata di proposito</b> (strict avalanche criterion)</td></tr>
-          <tr><td>Nessuna correlazione input–output</td><td>Pearson/Spearman vicini a 0 anche per k = 1, 2, 3, …</td><td>Serve perché Q non riveli nulla di semplice su k</td><td>Necessaria</td></tr>
-          <tr><td>Resistenza alle collisioni</td><td>Praticamente nulla: per 0 &lt; k &lt; n la mappa è iniettiva, quindi due chiavi non condividono mai un punto</td><td>Non applicabile</td><td><b>Richiesta</b>, e limitata dal birthday bound 2¹²⁸ per hash a 256 bit</td></tr>
-          <tr><td>Input di lunghezza arbitraria</td><td>L'input è un solo scalare minore di n</td><td>Non applicabile</td><td>Richiesta (Merkle–Damgård, sponge)</td></tr>
-          <tr><td>Struttura algebrica</td><td>(k₁ + k₂)G = k₁G + k₂G: la mappa è un omomorfismo di gruppi. I test statistici non la vedono</td><td><b>Utile</b>: permette firme, scambio di chiavi, MuSig, chiavi derivate</td><td><b>Fatale</b>: un hash con questa struttura sarebbe rotto</td></tr>
+          <tr><td>Deterministic, fast forward computation</td><td>The same k always gives the same Q; about 0.6 ms per kG here</td><td>Required</td><td>Required</td></tr>
+          <tr><td>Hard to invert</td><td>Recovering k from Q is the ECDLP: Pollard's rho needs about √n ≈ 2¹²⁸ group operations on secp256k1</td><td><b>The defining property</b></td><td>Called preimage resistance; the hardness comes from mixing, not from algebra</td></tr>
+          <tr><td>Uniform output</td><td>The bits of x look balanced (tests above). But x is not a uniform 256-bit string: only about half of the values are valid x coordinates, and y is fixed by x up to sign</td><td>Useful, not required</td><td>Required: outputs must be indistinguishable from random</td></tr>
+          <tr><td>Avalanche</td><td>One flipped input bit changes about 128 of 256 output bits: the statistic looks ideal</td><td>Not required. Passing it only shows that the output hides local structure</td><td><b>Designed on purpose</b> (strict avalanche criterion)</td></tr>
+          <tr><td>No input–output correlation</td><td>Pearson/Spearman close to 0 even for k = 1, 2, 3, …</td><td>Needed so that Q reveals nothing simple about k</td><td>Necessary</td></tr>
+          <tr><td>Collision resistance</td><td>Practically moot: for 0 &lt; k &lt; n the map is injective, so two keys never share a point</td><td>Not applicable</td><td><b>Required</b>, and limited by the 2¹²⁸ birthday bound for 256-bit hashes</td></tr>
+          <tr><td>Arbitrary-length input</td><td>The input is a single scalar below n</td><td>Not applicable</td><td>Required (Merkle–Damgård, sponge)</td></tr>
+          <tr><td>Algebraic structure</td><td>(k₁ + k₂)G = k₁G + k₂G: the map is a group homomorphism. Statistical tests do not see it</td><td><b>Useful</b>: enables signatures, key exchange, MuSig, derived keys</td><td><b>Fatal</b>: a hash with this structure would be broken</td></tr>
         </tbody></table></div>
-      <div class="callout"><p><b>Conclusione.</b> kG supera i controlli statistici che di solito si fanno sugli hash, ma questi mostrano solo che non c'è una relazione <em>semplice</em> tra k e Q. L'argomento di sicurezza è un altro: nessun algoritmo noto inverte la mappa in meno di circa 2¹²⁸ passi, e la struttura che la rende utile (è un omomorfismo) la squalificherebbe come hash. Nella pipeline di Ethereum compaiono entrambi, ciascuno col proprio compito: kG per il legame tra le chiavi, Keccak-256 per comprimere la chiave pubblica in un indirizzo.</p></div>
+      <div class="callout"><p><b>Conclusion.</b> kG passes the statistical checks usually run on hashes, but these only show that there is no <em>simple</em> relation between k and Q. The security argument is a different one: no known algorithm inverts the map in fewer than about 2¹²⁸ steps, and the structure that makes it useful (it is a homomorphism) would disqualify it as a hash. Both appear in the Ethereum pipeline, each with its own job: kG for the link between the keys, Keccak-256 to compress the public key into an address.</p></div>
 
-      <h3>2.4 Perché il toy non è sicuro: ricavare k a forza bruta</h3>
+      <h3>2.4 Why the toy is not secure: recovering k by brute force</h3>
       <div class="panel">
-        <div class="ctl"><label>Chiave pubblica Q<select id="bfQ"></select></label><button class="btn primary" id="btnBF" type="button">Trova k</button></div>
+        <div class="ctl"><label>Public key Q<select id="bfQ"></select></label><button class="btn primary" id="btnBF" type="button">Find k</button></div>
         <div id="bfOut" class="small"></div>
       </div>
     </section>
 
-    <a class="back-link" href="/statistics/">&larr; Torna a Statistics</a>
+    <a class="back-link" href="/statistics/">&larr; Back to Statistics</a>
   </main>
 </body>
 </html>
