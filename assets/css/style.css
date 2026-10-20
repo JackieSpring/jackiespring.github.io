@@ -170,7 +170,7 @@ main {
 }
 
 /* ==========================================================================
-   Componenti per le pagine degli homework (laboratori, grafici, tabelle)
+   Components for the homework pages (labs, charts, tables)
    ========================================================================== */
 
 :root {
@@ -258,7 +258,7 @@ main {
   padding: 0 var(--space-1);
 }
 
-/* Contenitori */
+/* Containers */
 
 .panel {
   border: 2px solid var(--ink);
@@ -332,7 +332,7 @@ main {
   margin-bottom: 0;
 }
 
-/* Form e pulsanti */
+/* Forms and buttons */
 
 .ctl {
   display: flex;
@@ -420,7 +420,7 @@ main {
 .pill.ok { color: var(--good); border-color: var(--good); }
 .pill.no { color: var(--bad); border-color: var(--bad); }
 
-/* Tabelle e codice */
+/* Tables and code */
 
 .tbl-wrap {
   overflow-x: auto;
@@ -472,7 +472,7 @@ td.num, th.num { text-align: right; }
 
 .hw-page pre.out { max-height: 300px; overflow: auto; }
 
-/* Figure e grafici (SVG/canvas disegnati da hw1.js) */
+/* Figures and charts (SVG/canvas drawn by the hw*.js scripts) */
 
 .fig { margin: 0; min-width: 0; }
 
@@ -529,7 +529,7 @@ svg .lbl { fill: var(--muted); font-size: 10.5px; }
   .panel { padding: var(--space-2); }
 }
 
-/* Homework 2: pipeline wallet, timeline, campi di testo */
+/* Homework 2: wallet pipeline, timeline, text fields */
 
 .hw-page textarea,
 .hw-page input.t {
@@ -665,3 +665,48 @@ svg .lbl { fill: var(--muted); font-size: 10.5px; }
 .timeline .ev.std .y { color: var(--s3); }
 .timeline b { display: block; }
 .timeline span { font-size: 0.9rem; color: var(--ink2); }
+
+/* Homework 2+: toy ciphers, statistical and search attacks */
+
+:root {
+  --s4: #f2d24b;
+  --s5: #e87ba4;
+  --s6: #9b8cff;
+  --warn: #f2d24b;
+}
+
+.pill.warn { color: var(--warn); border-color: var(--warn); }
+
+.hw-toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.hw-toc a {
+  color: var(--ink);
+  text-decoration: none;
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--ink);
+  background: var(--bg);
+  box-shadow: var(--shadow-hard-sm);
+  font-size: 0.9rem;
+}
+
+.hw-toc a:hover {
+  background: var(--bg-highlight);
+  color: var(--bg);
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+.hw-page summary { cursor: pointer; color: var(--accent); }
+
+.hw-page progress {
+  width: 140px;
+  height: 14px;
+  accent-color: var(--accent);
+}
+
+.hw-page .panel > label.small { display: block; margin-bottom: var(--space-1); }
