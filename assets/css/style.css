@@ -710,3 +710,70 @@ svg .lbl { fill: var(--muted); font-size: 10.5px; }
 }
 
 .hw-page .panel > label.small { display: block; margin-bottom: var(--space-1); }
+
+/* Homework 3: simulation controls, segmented switch, n tabs */
+
+/* scoped on purpose: `.ctl label` sets display:flex, which would otherwise defeat [hidden] */
+#pWrap[hidden] { display: none; }
+
+.ctl .lab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.seg {
+  display: inline-flex;
+  border: 2px solid var(--ink);
+}
+
+.seg button,
+.tabs button {
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--bg);
+  border: 0;
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.seg button + button { border-left: 2px solid var(--ink); }
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.tabs button {
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow-hard-sm);
+  padding: 0 var(--space-3);
+}
+
+.seg button:hover,
+.tabs button:hover {
+  background: var(--bg-highlight);
+  color: var(--bg);
+}
+
+.seg button[aria-pressed="true"],
+.tabs button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.legend i.ln {
+  width: 18px;
+  height: 0;
+  background: none;
+  border-top: 2px solid;
+  vertical-align: middle;
+}
+
+.legend i.ln.d { border-top-style: dashed; }

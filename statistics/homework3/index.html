@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homework 3 &mdash; Statistics</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jacquard+12&family=DotGothic16&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+
+  <script defer src="/assets/js/hw3.js"></script>
+</head>
+<body>
+  <header class="site-nav">
+    <div class="container">
+      <a class="nav-brand" href="/">jackiespring.github.io</a>
+      <ul class="nav-links">
+        <li><a href="/statistics/" class="active">Statistics</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="tip" id="tip" role="tooltip"></div>
+
+  <main class="container container-wide hw-page">
+    <h1 class="h1">Homework 3</h1>
+    <p class="lede">Aggregate penetration score of n systems under m attackers. Each attacker meets n systems in sequence and collects an i.i.d. score at every step. The page simulates m independent attackers for two score models and compares the total, the average and the normalized total as n grows, in light of the law of large numbers and the central limit theorem. Everything runs in your browser.</p>
+
+    <div class="tiles">
+      <div class="tile"><div class="l">Simulation size</div><div class="v" id="t-m">running…</div><div class="n">attackers × systems per attacker, one running total stored at 24 checkpoints</div></div>
+      <div class="tile"><div class="l">Variance of S<sub>n</sub></div><div class="v" id="t-var">running…</div><div class="n">simulated against the theoretical σ²n at n = 10,000</div></div>
+      <div class="tile"><div class="l">Law of large numbers</div><div class="v" id="t-lln">running…</div><div class="n" id="t-lln-n">share of attackers whose average is off by more than ε at n = 1,000</div></div>
+      <div class="tile"><div class="l">Central limit theorem</div><div class="v" id="t-ks">running…</div><div class="n" id="t-ks-n">Kolmogorov distance to the standard normal at n = 10,000</div></div>
+    </div>
+
+    <nav class="hw-toc" aria-label="Sections">
+      <a href="#model">1 · Model</a><a href="#traj">2 · Trajectories</a><a href="#dist">3 · Distributions</a><a href="#variance">4 · Variance</a><a href="#lln">5 · Law of large numbers</a><a href="#clt">6 · Central limit theorem</a><a href="#reading">7 · Reading the results</a>
+    </nav>
+
+    <!-- ====================== CONTROLS ====================== -->
+    <section>
+      <div class="panel" id="controls">
+        <div class="ctl" style="margin-bottom: 0">
+          <div class="lab">Score model
+            <div class="seg" role="group" aria-label="Score model"><button type="button" id="mBern" aria-pressed="true">Bernoulli</button><button type="button" id="mRad" aria-pressed="false">Rademacher</button></div>
+          </div>
+          <label id="pWrap">P(X = 1) = p <span class="mono" id="pOut">0.30</span><input id="pIn" type="range" min="0.05" max="0.95" step="0.05" value="0.3"></label>
+          <label for="mSel">Attackers m<select id="mSel"><option>100</option><option>1000</option><option selected>10000</option></select></label>
+          <button class="btn primary" id="rerun" type="button">Draw a new sample</button>
+          <span class="small" id="status">starting…</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================== 1: MODEL ====================== -->
+    <section id="model">
+      <h2><span class="kicker">Setup</span>Model</h2>
+      <p class="sub">Attacker j produces increments X<sub>1</sub>, X<sub>2</sub>, … i.i.d. with mean μ and variance σ². After n systems its total score is S<sub>n</sub>. The simulation fills an m × n matrix of increments and uses the row sums as m independent copies of S<sub>n</sub>, for n up to 10,000 (checkpoints from 1 to 10,000, 24 in all).</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th></th><th>Bernoulli(p)</th><th>Rademacher</th></tr></thead>
+        <tbody>
+          <tr><td>Increment X</td><td>{0, 1}, P(1) = p</td><td>{−1, +1}, probability ½ each</td></tr>
+          <tr><td>μ, σ²</td><td>p, p(1−p)</td><td>0, 1</td></tr>
+          <tr><td>E[S<sub>n</sub>], Var(S<sub>n</sub>)</td><td>np, np(1−p)</td><td>0, n</td></tr>
+          <tr><td>Var(S<sub>n</sub>/n)</td><td>p(1−p)/n → 0</td><td>1/n → 0</td></tr>
+          <tr><td>Var(S<sub>n</sub>/√n)</td><td>p(1−p), constant</td><td>1, constant</td></tr>
+          <tr><td>Limits</td><td>S<sub>n</sub>/n → p in probability; (S<sub>n</sub> − np)/√(np(1−p)) → N(0,1)</td><td>S<sub>n</sub>/n → 0 in probability; S<sub>n</sub>/√n → N(0,1)</td></tr>
+        </tbody></table></div>
+    </section>
+
+    <!-- ====================== 2: TRAJECTORIES ====================== -->
+    <section id="traj">
+      <h2><span class="kicker">One attacker at a time</span>Sample trajectories</h2>
+      <p class="sub" id="trajTxt"></p>
+      <div class="grid g2">
+        <figure class="fig"><div id="tr1"></div><figcaption>Total score S<sub>k</sub> of 25 attackers. Shaded: kμ ± 2σ√k.</figcaption></figure>
+        <figure class="fig"><div id="tr2"></div><figcaption>Running average S<sub>k</sub>/k of the same attackers. Shaded: μ ± 2σ/√k.</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ====================== 3: DISTRIBUTIONS ====================== -->
+    <section id="dist">
+      <h2><span class="kicker">Across the m attackers</span>Distributions of the three quantities</h2>
+      <p class="sub">Histograms over the m attackers at a chosen n, with the normal curve of the same mean and variance. The three quantities differ only by a change of scale, so the shape is the same; location and spread on the axis are what change.</p>
+      <div class="tabs" id="nTabs" role="group" aria-label="Number of systems n"></div>
+      <div class="grid g3">
+        <figure class="fig"><div id="h1"></div><figcaption id="h1c"></figcaption></figure>
+        <figure class="fig"><div id="h2"></div><figcaption id="h2c"></figcaption></figure>
+        <figure class="fig"><div id="h3"></div><figcaption id="h3c"></figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ====================== 4: VARIANCE ====================== -->
+    <section id="variance">
+      <h2><span class="kicker">Scaling</span>Variance under the different normalizations</h2>
+      <p class="sub">Sample variance across the m attackers against n, on log-log axes. The slopes are +1 for S<sub>n</sub>, −1 for S<sub>n</sub>/n and 0 for S<sub>n</sub>/√n.</p>
+      <div class="grid g2" style="align-items: start">
+        <figure class="fig"><div id="varChart"></div></figure>
+        <div>
+          <div class="tbl-wrap"><table><thead><tr><th class="num">n</th><th class="num">Var S<sub>n</sub></th><th class="num">Var S<sub>n</sub>/n</th><th class="num">Var S<sub>n</sub>/√n</th></tr></thead><tbody id="varTbl"></tbody></table></div>
+          <p class="small">Each cell: simulated value, theoretical value below it.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================== 5: LLN ====================== -->
+    <section id="lln">
+      <h2><span class="kicker">Convergence in probability</span>Law of large numbers</h2>
+      <p class="sub">Fraction of attackers whose average score is farther than ε from μ, against n. Chebyshev gives P(|S<sub>n</sub>/n − μ| &gt; ε) ≤ σ²/(nε²), which tends to 0, so S<sub>n</sub>/n → μ in probability.</p>
+      <div class="ctl"><label for="epsSel">Tolerance ε<select id="epsSel"><option>0.05</option><option selected>0.1</option><option>0.2</option></select></label></div>
+      <div class="grid g2" style="align-items: start">
+        <figure class="fig"><div id="llnChart"></div><figcaption id="llnCap"></figcaption></figure>
+        <div class="tbl-wrap"><table><thead><tr><th class="num">n</th><th class="num">simulated</th><th class="num">Chebyshev</th><th class="num">normal approx.</th></tr></thead><tbody id="llnTbl"></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- ====================== 6: CLT ====================== -->
+    <section id="clt">
+      <h2><span class="kicker">Convergence in distribution</span>Central limit theorem</h2>
+      <p class="sub" id="cltTxt"></p>
+      <div class="grid g2">
+        <div class="grid g2" id="cltGrid"></div>
+        <figure class="fig"><div id="ksChart"></div><figcaption id="ksCap"></figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ====================== 7: READING ====================== -->
+    <section id="reading">
+      <h2><span class="kicker">Answering the assignment</span>Reading the results for n systems and m attackers</h2>
+      <div id="interp"></div>
+      <p class="small">Method. Increments come from a seeded 128-bit generator (sfc32); Rademacher draws use one random bit per step. Each attacker is simulated for 10,000 systems and its running total is stored at 24 checkpoints. Kolmogorov distance is sup|F<sub>m</sub> − Φ| of the standardized totals (S<sub>n</sub> − nμ)/(σ√n). The Berry–Esseen bound is 0.4748·E|X − μ|³/(σ³√n).</p>
+    </section>
+
+    <a class="back-link" href="/statistics/">&larr; Back to Statistics</a>
+  </main>
+</body>
+</html>
