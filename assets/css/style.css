@@ -777,3 +777,7 @@ svg .lbl { fill: var(--muted); font-size: 10.5px; }
 }
 
 .legend i.ln.d { border-top-style: dashed; }
+
+/* Homework 4: stacked derivation lines (the older .steps is a scrolling box) */
+.stack { display: grid; gap: var(--space-1); }
+.stack .eq { white-space: nowrap; }

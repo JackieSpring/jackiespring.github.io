@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homework 4 &mdash; Statistics</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jacquard+12&family=DotGothic16&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+
+  <script defer src="/assets/js/hw4.js"></script>
+</head>
+<body>
+  <header class="site-nav">
+    <div class="container">
+      <a class="nav-brand" href="/">jackiespring.github.io</a>
+      <ul class="nav-links">
+        <li><a href="/statistics/" class="active">Statistics</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="tip" id="tip" role="tooltip"></div>
+
+  <main class="container container-wide hw-page">
+    <h1 class="h1">Homework 4</h1>
+    <p class="lede">Welford's recurrences and sampling statistics. Exercise 1 derives the one-pass recurrences for the mean, the sum of squares and the variance. Exercise 2 applies them to m hackers who each attempt n systems with Binomial(10, 0.4) scores, and compares the sampling mean and variance with the theoretical &mu; and &sigma;&sup2;. Everything runs in your browser.</p>
+
+    <div class="tiles">
+      <div class="tile"><div class="l">Recurrence check</div><div class="v" id="t-rec">running…</div><div class="n">Welford mean and SS against the two-pass values on the demo scores</div></div>
+      <div class="tile"><div class="l">Unbiased variance</div><div class="v" id="t-var">running…</div><div class="n" id="t-var-n">average s² (÷ n−1) against σ² at n = 30</div></div>
+      <div class="tile"><div class="l">Spread of the mean</div><div class="v" id="t-sdm">running…</div><div class="n">sd of the sampling means against σ/√n at n = 1,000</div></div>
+      <div class="tile"><div class="l">Spread of the variance</div><div class="v" id="t-sdv">running…</div><div class="n">sd of the sampling variances against theory at n = 1,000</div></div>
+    </div>
+
+    <nav class="hw-toc" aria-label="Sections">
+      <a href="#ex1">1 · Recurrences</a><a href="#ex2">2 · Simulation</a><a href="#conv">3 · Convergence</a><a href="#avg">4 · Averages vs theory</a><a href="#spread">5 · Variability</a><a href="#concl">6 · Conclusions</a>
+    </nav>
+
+    <!-- ====================== EXERCISE 1 ====================== -->
+    <section id="ex1">
+      <h2><span class="kicker">Exercise 1</span>Welford's recurrences</h2>
+      <p class="sub">For scores x<sub>1</sub>, &hellip;, x<sub>k</sub> let M<sub>k</sub> = (1/k) &Sigma; x<sub>i</sub> be the mean, SS<sub>k</sub> = &Sigma; (x<sub>i</sub> &minus; M<sub>k</sub>)&sup2; the sum of squares and s&sup2;<sub>k</sub> = SS<sub>k</sub>/(k &minus; 1) the sampling variance.</p>
+      <div class="grid g2" style="align-items: start">
+        <div class="panel">
+          <h3>Mean (Knuth)</h3>
+          <div class="stack">
+            <div class="eq">k·M<sub>k</sub> = (k − 1)·M<sub>k−1</sub> + x<sub>k</sub></div>
+            <div class="eq">M<sub>k</sub> = M<sub>k−1</sub> + (x<sub>k</sub> − M<sub>k−1</sub>) / k</div>
+          </div>
+          <h3 style="margin-top: var(--space-3)">Two identities used below</h3>
+          <div class="stack">
+            <div class="eq">(a) M<sub>k</sub> − M<sub>k−1</sub> = (x<sub>k</sub> − M<sub>k−1</sub>) / k</div>
+            <div class="eq">(b) x<sub>k</sub> − M<sub>k</sub> = (k − 1)(x<sub>k</sub> − M<sub>k−1</sub>) / k = (k − 1)(M<sub>k</sub> − M<sub>k−1</sub>)</div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Sum of squares</h3>
+          <div class="stack">
+            <div class="eq">SS<sub>k</sub> = Σ<sub>i≤k</sub> x<sub>i</sub>² − k·M<sub>k</sub>²</div>
+            <div class="eq">SS<sub>k</sub> − SS<sub>k−1</sub> = x<sub>k</sub>² − k·M<sub>k</sub>² + (k − 1)·M<sub>k−1</sub>²</div>
+            <div class="eq">k·M<sub>k</sub>² = M<sub>k</sub>[(k − 1)·M<sub>k−1</sub> + x<sub>k</sub>]</div>
+            <div class="eq">⇒ x<sub>k</sub>(x<sub>k</sub> − M<sub>k</sub>) − (k − 1)·M<sub>k−1</sub>(M<sub>k</sub> − M<sub>k−1</sub>)</div>
+            <div class="eq">by (b): (k − 1)(M<sub>k</sub> − M<sub>k−1</sub>) = x<sub>k</sub> − M<sub>k</sub></div>
+            <div class="eq"><b>SS<sub>k</sub> = SS<sub>k−1</sub> + (x<sub>k</sub> − M<sub>k−1</sub>)(x<sub>k</sub> − M<sub>k</sub>)</b></div>
+            <div class="eq">by (b) also: SS<sub>k</sub> = SS<sub>k−1</sub> + (k − 1)/k · (x<sub>k</sub> − M<sub>k−1</sub>)²</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel" style="margin-top: var(--space-3)">
+        <h3>Variance</h3>
+        <div class="stack">
+          <div class="eq">s²<sub>k</sub> = SS<sub>k</sub> / (k − 1) = [SS<sub>k−1</sub> + (k − 1)/k · (x<sub>k</sub> − M<sub>k−1</sub>)²] / (k − 1)</div>
+          <div class="eq"><b>s²<sub>k</sub> = (k − 2)/(k − 1) · s²<sub>k−1</sub> + (x<sub>k</sub> − M<sub>k−1</sub>)² / k</b> &nbsp; for k ≥ 2</div>
+        </div>
+        <p class="sub" style="margin: var(--space-2) 0 0">Start: M<sub>1</sub> = x<sub>1</sub>, SS<sub>1</sub> = 0. Each new score needs O(1) work and no stored history.</p>
+      </div>
+
+      <h3 style="margin-top: var(--space-4)">Code and live check</h3>
+      <div class="grid g2" style="align-items: start">
+<pre>let mean = 0, ss = 0, k = 0;
+
+function add(x) {
+  k++;
+  const d = x - mean;     // x_k - M_{k-1}
+  mean += d / k;          // M_k
+  ss   += d * (x - mean); // SS_k
+}
+// sampling variance: ss / (k - 1)</pre>
+        <div class="panel">
+          <label class="small" for="seq">Scores (edit to test)</label>
+          <textarea id="seq" rows="2" spellcheck="false">7, 3, 4, 6, 2, 5, 4, 8</textarea>
+          <div id="wfOut" style="margin-top: var(--space-2)"></div>
+        </div>
+      </div>
+      <div class="tbl-wrap" style="margin-top: var(--space-3)"><table><thead><tr><th class="num">k</th><th class="num">x<sub>k</sub></th><th class="num">M<sub>k</sub></th><th class="num">SS<sub>k</sub></th><th class="num">s²<sub>k</sub></th></tr></thead><tbody id="wfTbl"></tbody></table></div>
+    </section>
+
+    <!-- ====================== EXERCISE 2 ====================== -->
+    <section id="ex2">
+      <h2><span class="kicker">Exercise 2</span>Sampling mean and variance</h2>
+      <p class="sub">Same setting as the previous homework: m hackers, each attempting n systems in sequence. Each attempt now receives a score from 0 to 10 drawn from a Binomial(10, 0.4) distribution: a score is the number of ten independent checks passed, each with probability 0.4. Each hacker's n scores are fed to the recurrences above, giving a sampling mean and a sampling variance s&sup2; (divisor n &minus; 1). Those two numbers are then averaged over the m hackers.</p>
+      <div class="grid g2" style="align-items: start">
+        <figure class="fig"><div id="pmf"></div><figcaption id="pmfCap"></figcaption></figure>
+        <div class="panel">
+          <div class="ctl" style="margin-bottom: 0">
+            <label for="mSel">Hackers m<select id="mSel"><option>100</option><option selected>1000</option><option>10000</option></select></label>
+            <button class="btn primary" id="rerun" type="button">Draw a new sample</button>
+          </div>
+          <p class="small" id="status" style="margin: var(--space-2) 0 0">starting…</p>
+          <p class="small" style="margin: var(--space-2) 0 0">Each hacker is simulated once for 10,000 systems; the sample for a smaller n is its first n scores.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================== CONVERGENCE ====================== -->
+    <section id="conv">
+      <h2><span class="kicker">One hacker at a time</span>Convergence along one trajectory</h2>
+      <div class="grid g2">
+        <figure class="fig"><div id="cv1"></div><figcaption>Welford mean M<sub>k</sub> of 20 hackers against the number of systems k. Dashed: &mu;.</figcaption></figure>
+        <figure class="fig"><div id="cv2"></div><figcaption>Welford variance s&sup2;<sub>k</sub> of the same hackers. Dashed: &sigma;&sup2;.</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ====================== AVERAGES ====================== -->
+    <section id="avg">
+      <h2><span class="kicker">Across the m hackers</span>Average over the m hackers against the theory</h2>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th class="num">n</th><th class="num">avg sampling mean</th><th class="num">&mu;</th><th class="num">avg s² (÷ n−1)</th><th class="num">&sigma;²</th><th class="num">avg SS/n (÷ n)</th><th class="num">(n−1)&sigma;²/n</th></tr></thead>
+        <tbody id="avgTbl"></tbody></table></div>
+    </section>
+
+    <!-- ====================== VARIABILITY ====================== -->
+    <section id="spread">
+      <h2><span class="kicker">Spread of the estimators</span>Variability across hackers</h2>
+      <div class="tabs" id="nTabs" role="group" aria-label="Systems per hacker n"></div>
+      <div class="grid g2">
+        <figure class="fig"><div id="hm"></div><figcaption id="hmc"></figcaption></figure>
+        <figure class="fig"><div id="hv"></div><figcaption id="hvc"></figcaption></figure>
+      </div>
+      <div class="grid g2" style="align-items: start; margin-top: var(--space-3)">
+        <figure class="fig"><div id="sdChart"></div><figcaption>Standard deviation across hackers of the sampling mean and of the sampling variance, against n (log-log). Dashed: theory.</figcaption></figure>
+        <div class="tbl-wrap"><table><thead><tr><th class="num">n</th><th class="num">sd of means</th><th class="num">&sigma;/&radic;n</th><th class="num">sd of s²</th><th class="num">theory</th></tr></thead><tbody id="sdTbl"></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- ====================== CONCLUSIONS ====================== -->
+    <section id="concl">
+      <h2><span class="kicker">Answering the assignment</span>Conclusions</h2>
+      <div id="conclBody"></div>
+      <p class="small">Method. Scores come from a seeded 128-bit generator (sfc32) through the inverse of the Binomial(10, 0.4) distribution function. Theory: Var(x&#772;) = &sigma;&sup2;/n and Var(s&sup2;) = &mu;<sub>4</sub>/n &minus; &sigma;<sup>4</sup>(n &minus; 3)/(n(n &minus; 1)), where &mu;<sub>4</sub> is the fourth central moment of the score distribution.</p>
+    </section>
+
+    <a class="back-link" href="/statistics/">&larr; Back to Statistics</a>
+  </main>
+</body>
+</html>
