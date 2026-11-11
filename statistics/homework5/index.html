@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homework 5 &mdash; Statistics</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jacquard+12&family=DotGothic16&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+
+  <script defer src="/assets/js/hw5.js"></script>
+</head>
+<body>
+  <header class="site-nav">
+    <div class="container">
+      <a class="nav-brand" href="/">jackiespring.github.io</a>
+      <ul class="nav-links">
+        <li><a href="/statistics/" class="active">Statistics</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="tip" id="tip" role="tooltip"></div>
+
+  <main class="container container-wide hw-page">
+    <h1 class="h1">Homework 5</h1>
+    <p class="lede">Riemann and Lebesgue integration, and the normal CDF. Exercise 1 compares Riemann sums, which partition the domain, with Lebesgue sums, which partition the range, on seven functions and two pathological ones. Exercise 2 builds an accurate and cheap evaluation of the standard normal CDF and explains why it needs a special function. Everything runs in your browser.</p>
+
+    <div class="tiles">
+      <div class="tile"><div class="l">Order on sin x</div><div class="v" id="t-ord">computing…</div><div class="n">observed order p of the Riemann midpoint rule against the Lebesgue sum with exact &mu;</div></div>
+      <div class="tile"><div class="l">Step function, n = 1023</div><div class="v" id="t-step">computing…</div><div class="n">error of the Lebesgue sum (exact &mu;) against the Riemann sum</div></div>
+      <div class="tile"><div class="l">Hybrid CDF</div><div class="v" id="t-hyb">computing…</div><div class="n">max error of the hybrid against the 15-decimal reference</div></div>
+      <div class="tile"><div class="l">Naive tail at x = 7</div><div class="v" id="t-tail">computing…</div><div class="n">relative error of 1 &minus; &Phi;(x) against the direct tail</div></div>
+    </div>
+
+    <nav class="hw-toc" aria-label="Sections">
+      <a href="#ex1">1 · Riemann and Lebesgue</a><a href="#ex2">2 · Normal CDF</a>
+    </nav>
+
+    <!-- ====================== EXERCISE 1 ====================== -->
+    <section id="ex1">
+      <h2><span class="kicker">Exercise 1</span>Riemann and Lebesgue integration</h2>
+      <p class="sub">Both sums approximate &int;<sub>a</sub><sup>b</sup> f(x) dx with n cells (Riemann) or n levels (Lebesgue).</p>
+      <div class="grid g2" style="align-items: start">
+        <div class="panel">
+          <h3>Riemann sum (partition of the domain)</h3>
+          <div class="stack">
+            <div class="eq">Δ = (b − a)/n,  x<sub>i</sub> = a + (i − ½)Δ</div>
+            <div class="eq"><b>R<sub>n</sub> = Σ<sub>i=1..n</sub> f(x<sub>i</sub>)·Δ</b></div>
+          </div>
+          <p class="sub" style="margin: var(--space-2) 0 0">Midpoint rule. Cost: n evaluations of f.</p>
+        </div>
+        <div class="panel">
+          <h3>Lebesgue sum (partition of the range)</h3>
+          <div class="stack wrap">
+            <div class="eq">y<sub>j</sub> = m + j·h,  h = (T − m)/n,  E<sub>j</sub> = {x : y<sub>j</sub> ≤ f(x) &lt; y<sub>j+1</sub>}, E<sub>n</sub> = {f ≥ T}</div>
+            <div class="eq"><b>L<sub>n</sub> = Σ<sub>j=0..n</sub> y<sub>j</sub>·μ(E<sub>j</sub>)</b> = ∫ φ<sub>n</sub>,  φ<sub>n</sub> ≤ f simple</div>
+          </div>
+          <p class="sub" style="margin: var(--space-2) 0 0">m = inf f, T = sup f (T = &radic;n for the unbounded 1/&radic;x). Error &le; h(b &minus; a). The hard part is &mu;(E<sub>j</sub>).</p>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Two ways to obtain &mu;(E<sub>j</sub>)</h3>
+        <p class="sub"><b>Exact preimages.</b> &mu;{f &lt; t} is found by bisection on each monotone piece of f, about 60 evaluations per level and piece. A constant piece is read in one evaluation.</p>
+        <p class="sub" style="margin-bottom: 0"><b>Sampled preimages.</b> N = n&sup2; midpoint samples are sorted into the levels and counted, &mu;(E<sub>j</sub>) &asymp; count&middot;(b &minus; a)/N. The level error shrinks like 1/n and the counting error like n/N, so N = n&sup2; balances them.</p>
+      </div>
+
+      <h3>Values and errors</h3>
+      <div class="ctl">
+        <label for="n1Sel">n (odd, so that the jump at ½ is never a cell boundary)<select id="n1Sel"></select></label>
+        <span class="small" id="st1">computing…</span>
+      </div>
+      <div class="tbl-wrap keep"><table>
+        <thead><tr><th class="l">f, interval</th><th class="num">exact</th><th class="num">Riemann R<sub>n</sub></th><th class="num">Lebesgue, exact μ</th><th class="num">Lebesgue, sampled μ</th></tr></thead>
+        <tbody id="tb1"></tbody></table></div>
+      <p class="small">Each cell: value (signed error). The exact value for sin x / x is the sine integral Si(&pi;) = 1.8519370519824662.</p>
+
+      <h3>Convergence and cost</h3>
+      <div class="tabs" id="fTabs" role="group" aria-label="Function"></div>
+      <div class="grid g2">
+        <figure class="fig"><div id="ch1"></div><figcaption>Absolute error against n, for n = 2<sup>k</sup> &minus; 1 up to 1023. A zero error is drawn at the level marked 0.</figcaption></figure>
+        <figure class="fig"><div id="ch2"></div><figcaption id="ch2c"></figcaption></figure>
+      </div>
+
+      <h3>Observed order and cost to reach 10<sup>&minus;3</sup></h3>
+      <div class="tbl-wrap keep"><table>
+        <thead>
+          <tr><th class="l" rowspan="2">f</th><th class="c" colspan="2">Riemann</th><th class="c" colspan="2">Lebesgue, exact μ</th><th class="c" colspan="2">Lebesgue, sampled μ</th></tr>
+          <tr><th class="num">order p</th><th class="num">evaluations</th><th class="num">order p</th><th class="num">evaluations</th><th class="num">order p</th><th class="num">evaluations</th></tr>
+        </thead>
+        <tbody id="tb2"></tbody></table></div>
+      <p class="small">Error &prop; n<sup>&minus;p</sup>, estimated between n = 511 and n = 1023. Evaluations: the first n &le; 1023 with |error| &le; 10<sup>&minus;3</sup>, &ldquo;&ndash;&rdquo; if none.</p>
+
+      <h3>Pathological functions</h3>
+      <p class="sub">Dirichlet: 1 on the rationals, 0 on the irrationals. Thomae: 1/q at p/q in lowest terms, 0 on the irrationals. Every machine number is rational, so these functions cannot be sampled; the Riemann tags are chosen by their class (rational x<sub>i</sub> = i/n, or an irrational point of each cell), and the Darboux sums follow from the definitions.</p>
+      <div class="tbl-wrap keep"><table>
+        <thead><tr><th class="l">f</th><th class="num">n</th><th class="num">Riemann, rational tags</th><th class="num">Riemann, irrational tags</th><th class="num">lower Darboux</th><th class="num">upper Darboux</th><th class="num">Lebesgue</th></tr></thead>
+        <tbody id="tb3"></tbody></table></div>
+      <p class="small">Thomae, rational tags: &Sigma; gcd(i, n)/n&sup2; over i = 1..n. Upper Darboux: &Sigma; sup f over each closed cell, the sup being 1/q for the smallest denominator q of a fraction in the cell.</p>
+
+      <h3>Conclusions</h3>
+      <div id="concl1"></div>
+    </section>
+
+    <!-- ====================== EXERCISE 2 ====================== -->
+    <section id="ex2">
+      <h2><span class="kicker">Exercise 2</span>Numerical computation of the normal CDF</h2>
+      <p class="sub">&Phi;(x) = &int;<sub>&minus;&infin;</sub><sup>x</sup> &phi;(t) dt with &phi;(t) = e<sup>&minus;t&sup2;/2</sup>/&radic;(2&pi;). By symmetry &Phi;(&minus;x) = 1 &minus; &Phi;(x), so it is enough to work with x &ge; 0, and &Phi;(x) = &frac12; + &int;<sub>0</sub><sup>x</sup> &phi;.</p>
+
+      <h3>Methods</h3>
+      <div class="grid g2" style="align-items: start">
+        <div class="panel">
+          <h3>Numerical integration</h3>
+          <div class="stack wrap">
+            <div class="eq">trapezoid: ∫<sub>0</sub><sup>x</sup> φ ≈ h[φ(0)/2 + Σ<sub>i=1..n−1</sub> φ(ih) + φ(x)/2], error O(h²)</div>
+            <div class="eq">Simpson: (h/3)[φ(0) + 4Σ<sub>odd</sub> φ(ih) + 2Σ<sub>even</sub> φ(ih) + φ(x)], error O(h⁴)</div>
+          </div>
+          <p class="small" style="margin: var(--space-2) 0 0">h = x/n. n + 1 evaluations of exp, so the cost grows with the accuracy asked.</p>
+        </div>
+        <div class="panel">
+          <h3>Series expansion</h3>
+          <div class="stack wrap">
+            <div class="eq">alternating: ∫<sub>0</sub><sup>x</sup> φ = (1/√(2π)) Σ<sub>k≥0</sub> (−1)<sup>k</sup> x<sup>2k+1</sup> / (2<sup>k</sup> k! (2k+1))</div>
+            <div class="eq"><b>positive terms: ∫<sub>0</sub><sup>x</sup> φ = φ(x) · Σ<sub>k≥0</sub> x<sup>2k+1</sup>/(2k+1)!!</b></div>
+            <div class="eq">t<sub>k</sub> = t<sub>k−1</sub> · x²/(2k+1), t<sub>0</sub> = x</div>
+          </div>
+          <p class="small" style="margin: var(--space-2) 0 0">Positive form: S(x) = &Sigma; x<sup>2k+1</sup>/(2k+1)!! solves S&prime; = 1 + xS, hence (e<sup>&minus;x&sup2;/2</sup>S)&prime; = e<sup>&minus;x&sup2;/2</sup>. No cancellation, unlike the alternating form.</p>
+        </div>
+        <div class="panel">
+          <h3>Continued fraction for the tail</h3>
+          <div class="stack wrap">
+            <div class="eq"><b>Q(x) = 1 − Φ(x) = φ(x) / (x + 1/(x + 2/(x + 3/(x + …))))</b>,  x &gt; 0</div>
+          </div>
+          <p class="small" style="margin: var(--space-2) 0 0">Evaluated bottom-up with K = &lceil;160/x&rceil; levels. It converges faster as x grows and gives the tail directly, without computing 1 &minus; &Phi;.</p>
+        </div>
+        <div class="panel">
+          <h3>Hybrid and rational approximation</h3>
+          <div class="stack wrap">
+            <div class="eq"><b>hybrid:</b> positive series for x &lt; 3, continued fraction for x ≥ 3</div>
+            <div class="eq">A&amp;S 26.2.17: Q(x) ≈ φ(x)(b<sub>1</sub>t + … + b<sub>5</sub>t⁵), t = 1/(1 + 0.2316419x)</div>
+          </div>
+          <p class="small" style="margin: var(--space-2) 0 0">The hybrid is the proposed method. The polynomial has |error| &lt; 7.5&middot;10<sup>&minus;8</sup> at the price of one exp and about ten multiplications.</p>
+        </div>
+      </div>
+
+      <h3>Accuracy against a web reference</h3>
+      <p class="sub">Reference: the table of the 68&ndash;95&ndash;99.7 rule on Wikipedia, which lists P(|Z| &le; x) = 2&Phi;(x) &minus; 1 to 15 decimals. Each method returns this central probability directly, so no digits are lost by subtracting. The table shows |computed &minus; reference|; errors near 10<sup>&minus;16</sup> are at the resolution of the reference.</p>
+      <div class="ctl">
+        <label for="n2Sel">panels n for trapezoid and Simpson<select id="n2Sel"><option>10</option><option selected>100</option><option>1000</option></select></label>
+      </div>
+      <div class="tbl-wrap keep"><table>
+        <thead><tr><th class="num">x</th><th class="num">reference P(|Z| ≤ x)</th><th class="num">trapezoid</th><th class="num">Simpson</th><th class="num">alternating series</th><th class="num">positive series</th><th class="num">hybrid</th><th class="num">A&amp;S 26.2.17</th></tr></thead>
+        <tbody id="tb4"></tbody></table></div>
+
+      <h3>Tails</h3>
+      <p class="sub">The same Wikipedia table gives the frequency outside the range as &ldquo;1 in N&rdquo;. The direct tail Q(x) from the continued fraction is compared with the naive 1 &minus; &Phi;(x), where &Phi;(x) is first rounded to a double.</p>
+      <div class="tbl-wrap keep"><table>
+        <thead><tr><th class="num">x</th><th class="num">reference N</th><th class="num">1/(2Q(x)), direct tail</th><th class="num">1/(2(1 − Φ(x))), naive</th><th class="num">naive relative error</th></tr></thead>
+        <tbody id="tb5"></tbody></table></div>
+
+      <h3>Convergence of the quadrature rules</h3>
+      <div class="tabs" id="xTabs" role="group" aria-label="Upper limit x"></div>
+      <div class="grid g2" style="align-items: start">
+        <figure class="fig"><div id="ch3"></div><figcaption id="ch3c"></figcaption></figure>
+        <div class="panel">
+          <h3 style="margin-top: 0">Cost per evaluation</h3>
+          <div class="tbl-wrap keep"><table>
+            <thead><tr><th class="l">method</th><th class="l">work at x = 3</th><th class="num">ns per call</th></tr></thead>
+            <tbody id="tb6"></tbody></table></div>
+          <p class="small" style="margin: 0">Time measured in this browser, with n as selected above.</p>
+        </div>
+      </div>
+
+      <h3>Why &Phi; is not elementary: Liouville&rsquo;s theorem</h3>
+      <div class="grid g2" style="align-items: start">
+        <div class="panel">
+          <h3 style="margin-top: 0">Statement</h3>
+          <p class="small">Liouville (1835), in the form given by Rosenlicht (1972): let f and g be rational functions, g non-constant. Then &int; f e<sup>g</sup> dx is an elementary function if and only if there is a rational function R with</p>
+          <div class="stack wrap"><div class="eq">f = R′ + R·g′, and then ∫ f e<sup>g</sup> dx = R e<sup>g</sup></div></div>
+        </div>
+        <div class="panel">
+          <h3 style="margin-top: 0">Application to e<sup>&minus;x&sup2;/2</sup></h3>
+          <div class="stack wrap">
+            <div class="eq">f = 1, g = −x²/2, g′ = −x ⇒ need R′ − xR = 1</div>
+            <div class="eq">R = 0 gives 0 ≠ 1</div>
+            <div class="eq">R polynomial of degree d ≥ 0: deg(R′ − xR) = d + 1 ≥ 1</div>
+            <div class="eq">R with a pole of order m ≥ 1 at a: R′ has order m + 1, xR at most m, so R′ − xR still has a pole at a</div>
+          </div>
+          <p class="small" style="margin: var(--space-2) 0 0">No rational R solves the equation, so &int; e<sup>&minus;x&sup2;/2</sup> dx is not elementary. The total integral over &real; is still exactly &radic;(2&pi;) (polar coordinates), but &Phi;(x) at finite x is not a finite combination of elementary functions.</p>
+        </div>
+      </div>
+
+      <h3>The error function</h3>
+      <div class="panel">
+        <div class="stack wrap">
+          <div class="eq">erf(z) = (2/√π) ∫<sub>0</sub><sup>z</sup> e<sup>−t²</sup> dt</div>
+          <div class="eq"><b>Φ(x) = ½ [1 + erf(x/√2)]</b>,  Q(x) = ½ erfc(x/√2)</div>
+        </div>
+        <p class="sub" style="margin: var(--space-2) 0 0">This is an exact representation, but it works by naming the integral as a new function. A processor performs only +, &minus;, &times;, &divide; and &radic; exactly, so erf, like exp or sin, must still be evaluated through a series, a continued fraction or a rational approximation, and each of these has its own accuracy range. The practical difficulty is cancellation: the alternating series fails for large x and 1 &minus; &Phi;(x) loses all significant digits in the tail, so one needs erfc, or the tail Q, computed directly.</p>
+      </div>
+
+      <h3>Conclusions</h3>
+      <div id="concl2"></div>
+      <p class="small">References. R. Gardner, notes on Hogg&ndash;McKean&ndash;Craig, &sect;3.4 (<a href="https://faculty.etsu.edu/gardnerr/4047/notes-Hogg-McKean-Craig/Hogg-McKean-Craig-3-4.pdf">pdf</a>). Wikipedia, &ldquo;68&ndash;95&ndash;99.7 rule&rdquo; (<a href="https://en.wikipedia.org/wiki/68%E2%80%9395%E2%80%9399.7_rule">table of P(|Z| &le; k&sigma;)</a>). M. Rosenlicht, &ldquo;Integration in finite terms&rdquo;, Amer. Math. Monthly 79 (1972). Abramowitz&ndash;Stegun, formula 26.2.17.</p>
+    </section>
+
+    <a class="back-link" href="/statistics/">&larr; Back to Statistics</a>
+  </main>
+</body>
+</html>

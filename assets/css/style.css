@@ -781,3 +781,12 @@ svg .lbl { fill: var(--muted); font-size: 10.5px; }
 /* Homework 4: stacked derivation lines (the older .steps is a scrolling box) */
 .stack { display: grid; gap: var(--space-1); }
 .stack .eq { white-space: nowrap; }
+
+/* Homework 5: left-aligned label cells, grouped headers, wrapping derivations */
+.hw-page .tbl-wrap td.l,
+.hw-page .tbl-wrap th.l { text-align: left; }
+.hw-page th.c { text-align: center; }
+.hw-page td.good { color: var(--good); }
+.hw-page td.num small { color: var(--muted); font-size: 0.75rem; }
+.stack.wrap .eq { white-space: normal; }
+.hw-page .tbl-wrap.keep th { text-transform: none; letter-spacing: 0; }
