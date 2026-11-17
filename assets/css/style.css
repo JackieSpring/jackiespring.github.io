@@ -790,3 +790,7 @@ svg .lbl { fill: var(--muted); font-size: 10.5px; }
 .hw-page td.num small { color: var(--muted); font-size: 0.75rem; }
 .stack.wrap .eq { white-space: normal; }
 .hw-page .tbl-wrap.keep th { text-transform: none; letter-spacing: 0; }
+
+/* Homework 6: contingency tables (total rows, highlighted cell) */
+.hw-page tr.tot td { background: var(--panel2); color: var(--ink); }
+.hw-page td.hi { background: var(--accent-soft); color: var(--accent); }

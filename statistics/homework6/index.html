@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homework 6 &mdash; Statistics</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jacquard+12&family=DotGothic16&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+
+  <script defer src="/assets/js/hw6.js"></script>
+</head>
+<body>
+  <header class="site-nav">
+    <div class="container">
+      <a class="nav-brand" href="/">jackiespring.github.io</a>
+      <ul class="nav-links">
+        <li><a href="/statistics/" class="active">Statistics</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="tip" id="tip" role="tooltip"></div>
+
+  <main class="container container-wide hw-page">
+    <h1 class="h1">Homework 6</h1>
+    <p class="lede">Statistical independence. X is the protocol type and F is the label (normal or attack) of 125,973 network connections from the NSL-KDD intrusion detection dataset. The page builds the contingency table from the records, computes marginal and conditional frequencies, the expected frequencies under independence and the chi-square test. Everything runs in your browser.</p>
+
+    <div class="tiles">
+      <div class="tile"><div class="l">Chi-square</div><div class="v" id="t-chi">running…</div><div class="n">&chi;&sup2; with 2 degrees of freedom, critical value 5.99 at &alpha; = 0.05</div></div>
+      <div class="tile"><div class="l">p-value</div><div class="v" id="t-p">running…</div><div class="n">probability of a gap this large under independence</div></div>
+      <div class="tile"><div class="l">Attack rate</div><div class="v" id="t-rate">running…</div><div class="n" id="t-rate-n">attack rate by protocol</div></div>
+    </div>
+
+    <nav class="hw-toc" aria-label="Sections">
+      <a href="#data">1 · Data</a><a href="#freq">2 · Frequencies</a><a href="#indep">3 · Independence and &chi;&sup2;</a><a href="#concl-s">4 · Conclusions</a>
+    </nav>
+
+    <!-- ====================== DATA ====================== -->
+    <section id="data">
+      <h2><span class="kicker">Step 1</span>Data and contingency table</h2>
+      <p class="sub">Dataset: NSL-KDD, file <code>KDDTrain+</code> (Tavallaee et al., 2009), a cleaned version of the KDD Cup 99 network traffic records. X = <code>protocol_type</code> (tcp, udp, icmp), F = label, with every attack type merged into &ldquo;attack&rdquo; (normal, attack). The (X, F) counts were extracted from the 125,973 records of the file, the records are regenerated from the counts, and the table is rebuilt from them by the code below.</p>
+      <div class="grid g-lab" style="align-items: start">
+        <pre id="code"></pre>
+        <div>
+          <h3 style="margin-top: 0">Observed frequencies n<sub>ij</sub></h3>
+          <div class="tbl-wrap keep"><table id="tObs"></table></div>
+          <p class="small">n<sub>i&middot;</sub> and n<sub>&middot;j</sub> are the row and column totals, n the grand total.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================== FREQUENCIES ====================== -->
+    <section id="freq">
+      <h2><span class="kicker">Step 2</span>Marginal and conditional frequencies</h2>
+      <div class="grid g2" style="align-items: start">
+        <div>
+          <h3 style="margin-top: 0">Joint f<sub>ij</sub> = n<sub>ij</sub>/n and marginal frequencies</h3>
+          <div class="tbl-wrap keep"><table id="tJoint"></table></div>
+        </div>
+        <div>
+          <h3 style="margin-top: 0">Conditional on the protocol: f(F = y<sub>j</sub> | X = x<sub>i</sub>) = n<sub>ij</sub>/n<sub>i&middot;</sub></h3>
+          <div class="tbl-wrap keep"><table id="tCondF"></table></div>
+        </div>
+      </div>
+      <div class="grid g2" style="align-items: start">
+        <div>
+          <h3 style="margin-top: 0">Conditional on the label: f(X = x<sub>i</sub> | F = y<sub>j</sub>) = n<sub>ij</sub>/n<sub>&middot;j</sub></h3>
+          <div class="tbl-wrap keep"><table id="tCondX"></table></div>
+        </div>
+        <figure class="fig">
+          <h3 style="margin-top: 0">Attack rate by protocol</h3>
+          <div id="chart"></div>
+          <div class="legend"><span><i class="ln" style="border-color: var(--s1)"></i>f(attack | protocol)</span><span><i class="ln d" style="border-color: var(--s2)"></i>marginal f<sub>&middot;attack</sub></span></div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ====================== INDEPENDENCE ====================== -->
+    <section id="indep">
+      <h2><span class="kicker">Step 3</span>Independence, expected frequencies and &chi;&sup2;</h2>
+      <div class="grid g2" style="align-items: start">
+        <div class="panel">
+          <h3 style="margin-top: 0">Probability</h3>
+          <div class="stack wrap">
+            <div class="eq">A, B independent ⇔ P(A ∩ B) = P(A)·P(B)</div>
+            <div class="eq">⇔ P(B | A) = P(B),  if P(A) &gt; 0</div>
+            <div class="eq">X, F independent ⇔ P(X = x<sub>i</sub>, F = y<sub>j</sub>) = P(X = x<sub>i</sub>)·P(F = y<sub>j</sub>) for all i, j</div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3 style="margin-top: 0">Statistics</h3>
+          <div class="stack wrap">
+            <div class="eq">f<sub>ij</sub> = f<sub>i·</sub>·f<sub>·j</sub> for all i, j</div>
+            <div class="eq">⇔ f(F | X = x<sub>i</sub>) = f<sub>·j</sub> for every i</div>
+            <div class="eq"><b>E<sub>ij</sub> = n<sub>i·</sub>·n<sub>·j</sub> / n</b></div>
+            <div class="eq"><b>χ² = Σ<sub>ij</sub> (n<sub>ij</sub> − E<sub>ij</sub>)² / E<sub>ij</sub></b>,  df = (r − 1)(c − 1)</div>
+          </div>
+        </div>
+      </div>
+      <p class="sub">Sample frequencies never match independence exactly, so &chi;&sup2; measures the gap. Under independence &chi;&sup2; is approximately chi-square distributed with (r &minus; 1)(c &minus; 1) degrees of freedom, provided all E<sub>ij</sub> &ge; 5. The p-value is P(&chi;&sup2;<sub>df</sub> &ge; observed value), computed from the regularized incomplete gamma function (as a logarithm, because for these data it is far below the smallest representable double).</p>
+
+      <div class="grid g2" style="align-items: start">
+        <div>
+          <h3 style="margin-top: 0">Expected frequencies E<sub>ij</sub></h3>
+          <div class="tbl-wrap keep"><table id="tExp"></table></div>
+        </div>
+        <div>
+          <h3 style="margin-top: 0">Contributions (n<sub>ij</sub> &minus; E<sub>ij</sub>)&sup2; / E<sub>ij</sub></h3>
+          <div class="tbl-wrap keep"><table id="tContr"></table></div>
+        </div>
+      </div>
+
+      <div class="tiles" id="kpi"></div>
+    </section>
+
+    <!-- ====================== CONCLUSIONS ====================== -->
+    <section id="concl-s">
+      <h2><span class="kicker">Answering the assignment</span>Conclusions</h2>
+      <div id="concl"></div>
+      <p class="small">Reference: M. Tavallaee, E. Bagheri, W. Lu, A. A. Ghorbani, &ldquo;A detailed analysis of the KDD CUP 99 data set&rdquo;, IEEE CISDA 2009; data: NSL-KDD, Canadian Institute for Cybersecurity, University of New Brunswick (<a href="https://www.unb.ca/cic/datasets/nsl.html">unb.ca/cic/datasets/nsl.html</a>). The statistic agrees with <code>scipy.stats.chi2_contingency</code> without continuity correction (&chi;&sup2; = 10029.249); the library p-value underflows to 0.</p>
+    </section>
+
+    <a class="back-link" href="/statistics/">&larr; Back to Statistics</a>
+  </main>
+</body>
+</html>
